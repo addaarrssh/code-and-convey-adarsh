@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black text-[#f1f5f9]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code & Convey 2026 — Campus Placement Prediction Challenge | ACC Club NIT Jamshedpur</title>
+
+    <!-- 
+      Platform Architecture & Engineering: Adarsh Sahu (NIT Jamshedpur)
+      System Origin Fingerprint: 7e0c1424758faea74d08e7e710a6966761119204ed1da95d7976a463d28091c6
+      Code & Convey Challenge Platform
+    -->
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts: Plus Jakarta Sans, JetBrains Mono, and Roboto Flex (Full Variable Font Axes for Text Pressure) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            orange: '#ff6600',
+                            orangeHover: '#ff7711',
+                            glow: 'rgba(255, 102, 0, 0.40)',
+                            surface: '#090a0f',
+                            border: 'rgba(255, 255, 255, 0.10)',
+                            borderHover: 'rgba(255, 102, 0, 0.50)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --brand-orange: #ff6600;
+            --brand-glow: rgba(255, 102, 0, 0.35);
+        }
+
+        body {
+            background-color: #000000;
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Hero Mars Horizon Background */
+        .hero-mars-bg {
+            background: #000000 url('/static/img/mars_horizon.jpg') no-repeat center top;
+            background-size: cover;
+            position: relative;
+        }
+
+        .hero-mars-overlay {
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.75) 75%, #000000 100%);
+        }
+
+        /* Modern, Confident Human Display Typography */
+        .display-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            line-height: 0.98;
+        }
+
+        /* Thin Divider Line */
+        .accent-divider {
+            position: relative;
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.25);
+            margin: 1.5rem 0;
+        }
+
+        .year-pill {
+            position: absolute;
+            right: 0;
+            bottom: 6px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.1em;
+            color: #ff6600;
+        }
+
+        /* Navigation Links */
+        .portal-nav-btn {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.70);
+            position: relative;
+            padding: 0.5rem 0;
+            transition: color 0.2s ease;
+        }
+
+        .portal-nav-btn:hover,
+        .portal-nav-btn.active {
+            color: #ffffff;
+        }
+
+        .portal-nav-btn.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -2px;
+            height: 2px;
+            background: #ff6600;
+            box-shadow: 0 0 12px rgba(255, 102, 0, 0.9);
+        }
+
+        /* Glassmorphic Space Panels */
+        .space-card {
+            background: rgba(10, 12, 18, 0.75);
+            backdrop-filter: blur(24px) saturate(190%);
+            -webkit-backdrop-filter: blur(24px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 18px;
+            box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .space-card:hover {
+            border-color: rgba(255, 102, 0, 0.40);
+            box-shadow: 0 14px 45px -8px rgba(255, 102, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        
+        /* =========================================================================
+           REACT BITS TEXT PRESSURE STYLES
+           ========================================================================= */
+        .text-pressure-container {
+            position: relative;
+            width: 100%;
+            user-select: none;
+            overflow: visible;
+        }
+
+        .text-pressure-title {
+            font-family: 'Roboto Flex', sans-serif !important;
+            text-transform: uppercase;
+            line-height: 1;
+            margin: 0;
+            user-select: none;
+            white-space: nowrap;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            letter-spacing: -0.01em;
+        }
+
+        .text-pressure-title span {
+            display: inline-block;
+            transform-origin: center center;
+            will-change: font-variation-settings, transform;
+            transition: font-variation-settings 0.08s ease, transform 0.08s ease;
+        }
+
+        .text-pressure-title.is-stroke span {
+            position: relative;
+        }
+
+        .text-pressure-title.is-stroke span::after {
+            content: attr(data-char);
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: transparent;
+            z-index: -1;
+            -webkit-text-stroke-width: 1.5px;
+            -webkit-text-stroke-color: rgba(255, 102, 0, 0.4);
+        }
+
+        /* Starfield Canvas Layer */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Floating Mars Globe */
+        @keyframes floatOrb {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-7px) rotate(2deg); }
+        }
+
+        .mars-orb-float {
+            animation: floatOrb 7s ease-in-out infinite;
+        }
+
+        /* Table header sortable */
+        .sortable-th {
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s ease;
+        }
+        .sortable-th:hover {
+            color: #ff6600;
+        }
+    </style>
+</head>
+<body class="selection:bg-[#ff6600] selection:text-white">
+
+    <!-- Subtle Background Stars Particle Canvas -->
+    <canvas id="stars-canvas"></canvas>
+
+    <!-- Content Workspace -->
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <!-- Top Utility Status Bar -->
+        <div class="border-b border-white/10 bg-black/80 backdrop-blur-md text-[11px] font-mono px-4 py-2 text-slate-400">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <span class="inline-flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        SYSTEM ONLINE
+                    </span>
+                    <span class="text-slate-700">|</span>
+                    <span class="text-slate-300">100,000 STUDENT PROFILES READY</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span>SCORING: <strong class="text-slate-200 font-bold">R² ACCURACY</strong></span>
+                    <span class="text-slate-700">|</span>
+                    <span>LIMIT: <strong class="text-slate-200 font-bold">5 SUBMISSIONS / DAY</strong></span>
+                    <span class="text-slate-700">|</span>
+                    <button onclick="openAdminModal()" class="text-slate-400 hover:text-[#ff6600] transition flex items-center gap-1.5" title="Admin Security Clearance">
+                        <i class="fa-solid fa-lock text-[10px]"></i>
+                        <span>ADMIN LOGIN</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Institutional Header & Navigation -->
+        <header class="border-b border-white/10 bg-black/60 backdrop-blur-2xl sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                
+                <!-- Brand: Code & Convey NIT Jamshedpur -->
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-[#ff6600]/15 border border-[#ff6600]/40 flex items-center justify-center text-[#ff6600] shadow-[0_0_20px_rgba(255,102,0,0.3)]">
+                        <i class="fa-solid fa-chart-line text-base"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-lg tracking-tight text-white uppercase">CODE & CONVEY</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#ff6600]/20 text-[#ff6600] border border-[#ff6600]/40">
+                                2026
+                            </span>
+                        </div>
+                        <span class="text-xs text-slate-400 block">ACC Club • NIT Jamshedpur</span>
+                    </div>
+                </div>
+
+                <!-- Easy-to-Understand Navigation Links -->
+                <nav class="hidden md:flex items-center gap-8">
+                    <button onclick="switchTab('leaderboard')" id="tab-nav-leaderboard" class="portal-nav-btn active">
+                        LEADERBOARD
+                    </button>
+                    <button onclick="switchTab('submit')" id="tab-nav-submit" class="portal-nav-btn">
+                        SUBMIT PREDICTIONS
+                    </button>
+                    <button onclick="switchTab('downloads')" id="tab-nav-downloads" class="portal-nav-btn">
+                        DOWNLOAD DATA
+                    </button>
+                    <button onclick="switchTab('protocol')" id="tab-nav-protocol" class="portal-nav-btn">
+                        HOW IT WORKS
+                    </button>
+                </nav>
+
+                <!-- Right Action -->
+                <div>
+                    <button onclick="openAdminModal()" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-[#ff6600]/50 rounded-xl text-xs font-medium text-slate-200 hover:text-white transition flex items-center gap-2">
+                        <i class="fa-solid fa-key text-[11px] text-amber-400"></i>
+                        <span>Admin PIN</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Mobile Sub-Navigation -->
+            <div class="md:hidden flex items-center justify-around border-t border-white/10 bg-black/90 px-2 py-2 text-xs">
+                <button onclick="switchTab('leaderboard')" class="text-slate-300 hover:text-[#ff6600]">Leaderboard</button>
+                <button onclick="switchTab('submit')" class="text-slate-300 hover:text-[#ff6600]">Submit</button>
+                <button onclick="switchTab('downloads')" class="text-slate-300 hover:text-[#ff6600]">Data</button>
+                <button onclick="switchTab('protocol')" class="text-slate-300 hover:text-[#ff6600]">Rules</button>
+            </div>
+        </header>
+
+        <!-- HERO SECTION: Natural, Human-Crafted Placement Prediction Experience -->
+        <section class="hero-mars-bg min-h-[560px] lg:min-h-[640px] flex items-center relative overflow-hidden">
+            <div class="hero-mars-overlay absolute inset-0"></div>
+
+            <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    
+                    <!-- Left: Confident, Human-Crafted Title & Clear Words -->
+                    <div class="lg:col-span-8 space-y-4">
+                        <div class="flex items-center gap-2.5 text-xs font-semibold text-[#ff6600]">
+                            <span class="w-2 h-2 rounded-full bg-[#ff6600] animate-ping"></span>
+                            <span>MACHINE LEARNING CHALLENGE • ROUND 1</span>
+                        </div>
+
+                        <!-- Interactive Text Pressure Headline (Pure White Variable Font, No Color Shifting) -->
+                        <div class="space-y-2 select-none cursor-default max-w-2xl py-1" id="hero-text-pressure-wrapper">
+                            <div id="tp-hero-line1" class="text-pressure-container" data-text="PREDICT CAMPUS" data-flex="true" data-radius="0.5" data-color="#ffffff" data-pressure-color="#ffffff" data-min-font-size="36"></div>
+                            <div id="tp-hero-line2" class="text-pressure-container" data-text="PLACEMENTS" data-flex="true" data-radius="0.5" data-color="#ffffff" data-pressure-color="#ffffff" data-min-font-size="48"></div>
+                            <div class="flex items-center gap-2 text-[10px] font-mono text-slate-400 pt-1 tracking-wider">
+                                <i class="fa-solid fa-arrows-to-dot text-slate-400 animate-pulse"></i>
+                                <span>INTERACTIVE TEXT PRESSURE • HOVER TO WARP WEIGHT & WIDTH • CLICK TO RIPPLE</span>
+                            </div>
+                        </div>
+
+                        <!-- Clean Divider Line with Year -->
+                        <div class="accent-divider">
+                            <span class="year-pill">NIT JAMSHEDPUR 2026</span>
+                        </div>
+
+                        <!-- Easy-to-understand Human Description -->
+                        <p class="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed font-normal">
+                            Can your machine learning model predict the job packages offered to NIT Jamshedpur graduates? Train on 100,000 real student profiles across 7 engineering branches, climb the leaderboard, and qualify for the final presentation round.
+                        </p>
+
+                        <!-- Action Buttons -->
+                        <div class="pt-3 flex flex-wrap items-center gap-4">
+                            <button onclick="switchTab('submit')" class="px-6 py-3.5 bg-[#ff6600] hover:bg-[#ff7711] text-white font-bold text-xs tracking-wider uppercase rounded-xl shadow-[0_0_25px_rgba(255,102,0,0.5)] transition flex items-center gap-2.5">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span>SUBMIT YOUR PREDICTIONS</span>
+                            </button>
+                            <button onclick="switchTab('downloads')" class="px-6 py-3.5 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/40 text-white font-semibold text-xs tracking-wider uppercase rounded-xl transition flex items-center gap-2.5">
+                                <i class="fa-solid fa-download"></i>
+                                <span>DOWNLOAD DATASET</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Floating Mars Globe & Simple Telemetry Card -->
+                    <div class="lg:col-span-4 flex justify-center lg:justify-end">
+                        <div class="space-card p-6 w-full max-w-sm space-y-5 relative overflow-hidden border border-white/15">
+                            
+                            <!-- Mars Globe -->
+                            <div class="flex flex-col items-center text-center">
+                                <div class="relative w-44 h-44 flex items-center justify-center">
+                                    <div class="absolute inset-0 rounded-full bg-[#ff6600]/20 blur-2xl"></div>
+                                    <img src="/static/img/mars_orb.png" alt="Mars Planetary Globe" class="w-40 h-40 object-contain mars-orb-float relative z-10 drop-shadow-[0_0_30px_rgba(255,102,0,0.4)]">
+                                </div>
+                                <span class="text-[11px] font-mono tracking-wider text-[#ff6600] uppercase mt-2">BENCHMARK OVERVIEW</span>
+                                <h3 class="font-bold text-base text-white mt-0.5">CAMPUS SALARY DATASET</h3>
+                            </div>
+
+                            <!-- 4 Clear Metrics -->
+                            <div class="grid grid-cols-2 gap-2.5 font-mono text-xs pt-3 border-t border-white/10">
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="text-[10px] text-slate-400">TRAINING DATA</div>
+                                    <div class="text-white font-bold text-sm mt-0.5">100,000</div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="text-[10px] text-slate-400">TEST DATA</div>
+                                    <div class="text-white font-bold text-sm mt-0.5">100,000</div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="text-[10px] text-slate-400">BEST SCORE</div>
+                                    <div id="telemetry-lead-r2" class="text-[#ff6600] font-bold text-sm mt-0.5">-0.0006</div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <div class="text-[10px] text-slate-400">TEAMS JOINED</div>
+                                    <div id="telemetry-total-teams" class="text-cyan-400 font-bold text-sm mt-0.5">8</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        
+
+        <!-- MAIN CONTENT WORKSPACE -->
+        <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+            <!-- =========================================================================
+                 VIEW 1: LIVE LEADERBOARD / BENCHMARK STANDINGS
+                 ========================================================================= -->
+            <section id="view-leaderboard" class="view-panel space-y-4">
+                <div class="space-card p-6 sm:p-8">
+                    
+                    <!-- Table Header Controls -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/10">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div id="tp-standings-heading" class="text-pressure-container min-w-[260px] inline-block" data-text="LIVE STANDINGS" data-flex="true" data-radius="0.4" data-color="#ffffff" data-pressure-color="#ffffff" data-min-font-size="20"></div>
+                                </div>
+                                <span id="badge-benchmark-type" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    PUBLIC BENCHMARK (50,000 ROWS)
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-400 font-sans">Teams are ranked by prediction accuracy (R² Score). Closer to 1.0 is better.</p>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                                <input type="text" id="input-search-leaderboard" onkeyup="filterLeaderboard()" placeholder="Search team..." class="pl-8 pr-3 py-2 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition w-44 sm:w-56">
+                            </div>
+                            <button onclick="fetchLeaderboardData()" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/15 rounded-xl text-xs font-medium text-slate-200 hover:text-white transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate text-[10px]"></i>
+                                <span>REFRESH</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Table Container -->
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-left font-sans text-xs border-collapse">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-white/10 text-[11px] font-mono uppercase tracking-wider">
+                                    <th class="py-3.5 px-3 sortable-th" onclick="sortLeaderboard('rank')">RANK <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
+                                    <th class="py-3.5 px-3 sortable-th" onclick="sortLeaderboard('team')">TEAM NAME <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
+                                    <th class="py-3.5 px-3 sortable-th text-right font-bold text-[#ff6600]" onclick="sortLeaderboard('r2')">R² SCORE (ACCURACY) <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
+                                    <th class="py-3.5 px-3 sortable-th text-right font-mono" onclick="sortLeaderboard('rmse')">AVG ERROR (₹ LPA) <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
+                                    <th class="py-3.5 px-3 sortable-th text-center font-mono" onclick="sortLeaderboard('submissions')">SUBMISSIONS <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
+                                    <th class="py-3.5 px-3 text-right font-mono">LAST SUBMITTED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-leaderboard" class="divide-y divide-white/5">
+                                <tr>
+                                    <td colspan="6" class="py-12 text-center text-slate-500 font-sans text-xs">
+                                        <i class="fa-solid fa-spinner fa-spin text-lg text-[#ff6600] mb-2"></i>
+                                        <p>Loading live leaderboard scores...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-slate-500">
+                        <div>Active Teams: <span id="telemetry-active-teams" class="text-slate-300 font-bold">8</span></div>
+                        <div>Evaluation: 50% Public Benchmark / 50% Private Ground Truth</div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- =========================================================================
+                 VIEW 2: SUBMISSION COCKPIT
+                 ========================================================================= -->
+            <section id="view-submit" class="view-panel hidden space-y-4">
+                <div class="space-card p-6 sm:p-8">
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        
+                        <div class="text-center space-y-1.5">
+                            <span class="text-xs font-semibold text-[#ff6600] uppercase tracking-wider">EVALUATION COCKPIT</span>
+                            <h2 class="font-bold text-2xl text-white">Submit Your Predictions</h2>
+                            <p class="text-xs text-slate-400 font-sans">
+                                Upload your predicted salaries for the 100,000 test students to see your instant leaderboard score.
+                            </p>
+                        </div>
+
+                        <!-- Progress Bar Container (Hidden by default) -->
+                        <div id="submission-progress-wrapper" class="hidden space-y-2 p-4 rounded-xl bg-black/80 border border-white/15 font-mono text-xs">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span id="progress-status-text" class="text-slate-300 flex items-center gap-2">
+                                    <i class="fa-solid fa-spinner fa-spin text-[#ff6600]"></i> CHECKING YOUR 100,000 PREDICTIONS...
+                                </span>
+                                <span id="progress-percentage-text" class="text-[#ff6600] font-bold">20%</span>
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden">
+                                <div id="submission-progress-bar" class="bg-[#ff6600] h-2 rounded-full transition-all duration-300" style="width: 20%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Submission Alert Banner -->
+                        <div id="box-submit-alert" class="hidden"></div>
+
+                        <!-- Ingestion Form -->
+                        <form id="form-submission" onsubmit="handleFormSubmission(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-medium text-slate-300">YOUR TEAM NAME *</label>
+                                    <input type="text" id="field-team-name" required placeholder="e.g. Apex Gradient" class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-medium text-slate-300">LEADER EMAIL ADDRESS *</label>
+                                    <input type="email" id="field-team-email" required placeholder="student@nitjsr.ac.in" class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition">
+                                </div>
+                            </div>
+
+                            <!-- CSV Drag & Drop Zone -->
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-slate-300">PREDICTIONS CSV FILE (EXACTLY 100,000 ROWS) *</label>
+                                <div id="dropzone" class="border-2 border-dashed border-white/20 hover:border-[#ff6600]/60 rounded-2xl p-8 text-center cursor-pointer transition bg-black/40 hover:bg-[#ff6600]/5 group">
+                                    <input type="file" id="field-file-csv" accept=".csv" required class="hidden" onchange="handleFileSelected(this)">
+                                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 group-hover:text-[#ff6600] transition mb-3"></i>
+                                    <div class="text-sm font-semibold text-white">Click or drag & drop your submission CSV here</div>
+                                    <div class="text-xs text-slate-400 font-mono mt-1">Required columns: <code class="text-slate-200">ID,Placed_CTC_LPA</code></div>
+                                    <div id="label-filename" class="mt-3 inline-flex items-center gap-2 text-xs font-mono text-[#ff6600] bg-[#ff6600]/15 px-3 py-1 rounded-full border border-[#ff6600]/30 hidden"></div>
+                                </div>
+                            </div>
+
+                            <!-- Optional Notebook (.ipynb) -->
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-medium text-slate-300">OPTIONAL: JUPYTER NOTEBOOK (.ipynb / .py)</label>
+                                <input type="file" id="field-file-nb" accept=".ipynb,.py" class="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-xs font-mono text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-sans file:bg-white/10 file:text-slate-200 hover:file:bg-white/20">
+                            </div>
+
+                            <button type="submit" id="btn-submit" class="w-full py-3.5 bg-[#ff6600] hover:bg-[#ff7711] text-white font-bold text-xs tracking-wider uppercase rounded-xl shadow-[0_0_25px_rgba(255,102,0,0.5)] transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-bolt"></i>
+                                <span>CHECK MY SCORE NOW</span>
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================================
+                 VIEW 3: DATA VAULT & PARTICIPANT KIT
+                 ========================================================================= -->
+            <section id="view-downloads" class="view-panel hidden space-y-4">
+                <div class="space-card p-6 sm:p-8">
+                    <div class="max-w-3xl mx-auto space-y-6">
+                        <div class="text-center space-y-1.5">
+                            <span class="text-xs font-semibold text-[#ff6600] uppercase tracking-wider">RESOURCES</span>
+                            <h2 class="font-bold text-2xl text-white">Download Competition Files</h2>
+                            <p class="text-xs text-slate-400 font-sans">
+                                Everything you need to train your model and make your submission.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- train.csv -->
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-500/40 space-y-3 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                                        <i class="fa-solid fa-table"></i>
+                                    </div>
+                                    <span class="text-[10px] font-mono text-slate-400">TRAINING DATA</span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white font-mono">train.csv</div>
+                                    <div class="text-xs text-slate-400 mt-1">100,000 student records with known salaries to train your model.</div>
+                                </div>
+                                <a href="/download/train.csv" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 rounded-xl text-xs font-medium text-slate-200 hover:text-emerald-300 transition">
+                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD TRAIN DATA</span>
+                                </a>
+                            </div>
+
+                            <!-- test.csv -->
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/40 space-y-3 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                                        <i class="fa-solid fa-flask"></i>
+                                    </div>
+                                    <span class="text-[10px] font-mono text-slate-400">TEST DATA</span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white font-mono">test.csv</div>
+                                    <div class="text-xs text-slate-400 mt-1">100,000 students without salaries. Predict these to score!</div>
+                                </div>
+                                <a href="/download/test.csv" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/40 rounded-xl text-xs font-medium text-slate-200 hover:text-cyan-300 transition">
+                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD TEST DATA</span>
+                                </a>
+                            </div>
+
+                            <!-- sample_submission.csv -->
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-[#ff6600]/40 space-y-3 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="w-10 h-10 rounded-xl bg-[#ff6600]/15 border border-[#ff6600]/30 flex items-center justify-center text-[#ff6600]">
+                                        <i class="fa-solid fa-file-csv"></i>
+                                    </div>
+                                    <span class="text-[10px] font-mono text-slate-400">SAMPLE FORMAT</span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white font-mono">sample_submission.csv</div>
+                                    <div class="text-xs text-slate-400 mt-1">Example format showing exact columns: ID, Placed_CTC_LPA.</div>
+                                </div>
+                                <a href="/download/sample_submission.csv" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-[#ff6600]/20 border border-white/10 hover:border-[#ff6600]/40 rounded-xl text-xs font-medium text-slate-200 hover:text-[#ff6600] transition">
+                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD FORMAT</span>
+                                </a>
+                            </div>
+
+                            <!-- baseline_model.py -->
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/40 space-y-3 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                                        <i class="fa-brands fa-python"></i>
+                                    </div>
+                                    <span class="text-[10px] font-mono text-slate-400">STARTER CODE</span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-white font-mono">baseline_model.py</div>
+                                    <div class="text-xs text-slate-400 mt-1">A ready-to-run Python script using LightGBM to get started fast.</div>
+                                </div>
+                                <a href="/download/baseline_model.py" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 rounded-xl text-xs font-medium text-slate-200 hover:text-purple-300 transition">
+                                    <i class="fa-solid fa-code"></i> <span>DOWNLOAD STARTER SCRIPT</span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================================================
+                 VIEW 4: PROTOCOL & SPECIFICATION
+                 ========================================================================= -->
+            <section id="view-protocol" class="view-panel hidden space-y-4">
+                <div class="space-card p-6 sm:p-8">
+                    <div class="max-w-3xl mx-auto space-y-6">
+                        <div class="text-center space-y-1.5">
+                            <span class="text-xs font-semibold text-[#ff6600] uppercase tracking-wider">RULES & FAQ</span>
+                            <h2 class="font-bold text-2xl text-white">How The Challenge Works</h2>
+                            <p class="text-xs text-slate-400 font-sans">
+                                Simple guidelines on scoring, leaderboards, and daily submission limits.
+                            </p>
+                        </div>
+
+                        <div class="space-y-4 text-xs font-sans text-slate-300 leading-relaxed">
+                            <div class="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-2">
+                                <div class="text-sm font-bold text-white flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-[#ff6600]/20 text-[#ff6600] flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-trophy"></i>
+                                    </div>
+                                    <span>HOW SCORING WORKS</span>
+                                </div>
+                                <p class="text-slate-400 leading-normal pl-9">
+                                    Submissions are ranked primarily by <strong class="text-white font-semibold">R² Score</strong> (how closely your predicted salaries track actual salaries). Closer to 1.0 is better! If two teams have the same R², the team with lower <strong class="text-white font-semibold">RMSE</strong> (average salary error in ₹ Lakhs) wins the tiebreaker.
+                                </p>
+                            </div>
+
+                            <div class="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-2">
+                                <div class="text-sm font-bold text-white flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-layer-group"></i>
+                                    </div>
+                                    <span>PUBLIC VS PRIVATE LEADERBOARD</span>
+                                </div>
+                                <p class="text-slate-400 leading-normal pl-9">
+                                    The 100,000 test students are split 50/50. During the competition, your score on the live leaderboard is calculated on the <strong class="text-white font-semibold">50,000 Public rows</strong>. At the end of the competition, final winners are evaluated on the remaining <strong class="text-white font-semibold">50,000 Private rows</strong> so nobody can cheat or overfit.
+                                </p>
+                            </div>
+
+                            <div class="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-2">
+                                <div class="text-sm font-bold text-white flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-clock"></i>
+                                    </div>
+                                    <span>DAILY SUBMISSION LIMIT</span>
+                                </div>
+                                <p class="text-slate-400 leading-normal pl-9">
+                                    Each team gets <strong class="text-white font-semibold">5 submissions every 24 hours</strong>. Your highest score is automatically saved, so you can keep trying and improving without losing your rank!
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Institutional Footer -->
+        <footer class="border-t border-white/10 bg-black/80 backdrop-blur-md py-6 text-center text-xs font-mono text-slate-500">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="font-sans">CODE & CONVEY • ACC CLUB • NIT JAMSHEDPUR 2026</div>
+                <div class="flex items-center gap-2 text-slate-400 font-sans">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#ff6600]"></span>
+                    <span>High-Performance Scoring Engine Active</span>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- =========================================================================
+         EVALUATION RECEIPT MODAL
+         ========================================================================= -->
+    <div id="modal-receipt" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="space-card max-w-md w-full p-6 space-y-5 border border-white/20">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <span class="font-bold text-base text-white">Your Evaluation Results</span>
+                </div>
+                <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 font-sans text-xs">
+                <div class="flex justify-between py-1 border-b border-white/5">
+                    <span class="text-slate-400">Team Name:</span>
+                    <span id="receipt-team" class="text-white font-bold">—</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-white/5">
+                    <span class="text-slate-400">Submissions Used Today:</span>
+                    <span id="receipt-quota" class="text-slate-300 font-semibold font-mono">—</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-white/5">
+                    <span class="text-slate-400">Submitted At:</span>
+                    <span id="receipt-time" class="text-slate-400 text-[10px] font-mono">—</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2.5 pt-2">
+                    <div class="p-3 rounded-xl bg-white/5 text-center border border-white/10">
+                        <div class="text-[10px] text-slate-400 font-medium">PUBLIC R²</div>
+                        <div id="receipt-r2" class="text-lg font-bold text-[#ff6600] font-mono mt-1">—</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-white/5 text-center border border-white/10">
+                        <div class="text-[10px] text-slate-400 font-medium">RMSE</div>
+                        <div id="receipt-rmse" class="text-lg font-bold text-white font-mono mt-1">—</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-white/5 text-center border border-white/10">
+                        <div class="text-[10px] text-slate-400 font-medium">MAE</div>
+                        <div id="receipt-mae" class="text-lg font-bold text-white font-mono mt-1">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeReceiptModal(); switchTab('leaderboard');" class="w-full py-3 bg-[#ff6600] hover:bg-[#ff7711] text-white font-bold text-xs tracking-wider uppercase rounded-xl shadow-[0_0_20px_rgba(255,102,0,0.4)] transition">
+                SEE MY STANDING ON LEADERBOARD
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         ADMIN PIN MODAL
+         ========================================================================= -->
+    <div id="modal-admin" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="space-card max-w-sm w-full p-6 space-y-4 border border-white/20">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-amber-400"></i>
+                    <span class="font-bold text-sm text-white">Administrator Access</span>
+                </div>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-400 font-sans">
+                Enter the Admin PIN to switch between Public (50,000) and Private (100,000) leaderboard scores.
+            </p>
+
+            <div class="space-y-1.5">
+                <input type="password" id="input-admin-pin" placeholder="Enter PIN (e.g. ACC2026)" class="w-full px-3.5 py-2.5 bg-black border border-white/15 rounded-xl text-xs font-mono text-white text-center tracking-widest focus:outline-none focus:border-[#ff6600]">
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeAdminModal()" class="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-sans text-xs rounded-xl transition">
+                    Cancel
+                </button>
+                <button onclick="executeAdminToggle()" class="flex-1 py-2.5 bg-[#ff6600] hover:bg-[#ff7711] text-white font-bold text-xs rounded-xl transition shadow-[0_0_20px_rgba(255,102,0,0.4)]">
+                    Unlock
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         BACKGROUND STARS CANVAS JAVASCRIPT
+         ========================================================================= -->
+    <script>
+        (function initStars() {
+            const canvas = document.getElementById('stars-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            let width = 0, height = 0;
+            let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            function resize() {
+                dpr = Math.min(window.devicePixelRatio || 1, 2);
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                ctx.scale(dpr, dpr);
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const STAR_COUNT = 280;
+            const stars = [];
+
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 1.3 + 0.4,
+                    alpha: Math.random() * 0.7 + 0.3,
+                    speed: Math.random() * 0.02 + 0.005,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            let simTime = 0;
+            let lastTime = performance.now();
+
+            function render(now) {
+                const delta = Math.min((now - lastTime) / 1000, 0.1);
+                lastTime = now;
+                simTime += delta * 1000;
+
+                ctx.clearRect(0, 0, width, height);
+
+                for (let i = 0; i < stars.length; i++) {
+                    const star = stars[i];
+                    const twinkle = 0.5 + 0.5 * Math.sin(simTime * star.speed + star.phase);
+                    const currentAlpha = star.alpha * twinkle;
+
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                }
+
+                rafId = requestAnimationFrame(render);
+            }
+
+            let rafId = requestAnimationFrame(render);
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) cancelAnimationFrame(rafId);
+                else {
+                    lastTime = performance.now();
+                    rafId = requestAnimationFrame(render);
+                }
+            });
+        })();
+
+
+        
+
+
+        /* =========================================================================
+           CLIENT STATE, MULTI-COLUMN SORTING & TELEMETRY ENGINE
+           ========================================================================= */
+        let cachedLeaderboard = [];
+        let currentLeaderboardState = { is_private_revealed: false };
+        let currentSortColumn = 'r2';
+        let sortDirection = 'desc';
+
+        function switchTab(viewId) {
+            document.querySelectorAll('.view-panel').forEach(panel => panel.classList.add('hidden'));
+            document.querySelectorAll('.portal-nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            const activePanel = document.getElementById(`view-${viewId}`);
+            const activeTab = document.getElementById(`tab-nav-${viewId}`);
+
+            if (activePanel) {
+                activePanel.classList.remove('hidden');
+                activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            if (activeTab) activeTab.classList.add('active');
+
+            if (viewId === 'leaderboard') fetchLeaderboardData();
+        }
+
+        async function fetchLeaderboardData() {
+            try {
+                const response = await fetch('/api/leaderboard');
+                const data = await response.json();
+
+                cachedLeaderboard = data.leaderboard || [];
+                currentLeaderboardState = data;
+
+                // Update Telemetry Header Metrics
+                const teamsCount = data.total_teams || data.active_teams || cachedLeaderboard.length;
+                if (document.getElementById('telemetry-total-teams')) {
+                    document.getElementById('telemetry-total-teams').textContent = teamsCount;
+                }
+                if (document.getElementById('telemetry-active-teams')) {
+                    document.getElementById('telemetry-active-teams').textContent = teamsCount;
+                }
+
+                if (cachedLeaderboard.length > 0) {
+                    const topR2 = cachedLeaderboard[0].public_r2 ?? cachedLeaderboard[0].best_public_r2 ?? cachedLeaderboard[0].r2;
+                    if (topR2 !== undefined && document.getElementById('telemetry-lead-r2')) {
+                        document.getElementById('telemetry-lead-r2').textContent = Number(topR2).toFixed(4);
+                    }
+                }
+
+                const badge = document.getElementById('badge-benchmark-type');
+                if (data.is_private_revealed) {
+                    badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center gap-1.5";
+                    badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> PRIVATE GROUND TRUTH (100,000 ROWS)`;
+                } else {
+                    badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5";
+                    badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> PUBLIC BENCHMARK (50,000 ROWS)`;
+                }
+
+                renderLeaderboardTable();
+            } catch (err) {
+                console.error("Leaderboard sync failure:", err);
+            }
+        }
+
+        function sortLeaderboard(col) {
+            if (currentSortColumn === col) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = col;
+                sortDirection = (col === 'rank' || col === 'rmse') ? 'asc' : 'desc';
+            }
+            renderLeaderboardTable();
+        }
+
+        function filterLeaderboard() {
+            renderLeaderboardTable();
+        }
+
+        function renderLeaderboardTable() {
+            const tbody = document.getElementById('tbody-leaderboard');
+            const searchVal = (document.getElementById('input-search-leaderboard').value || '').toLowerCase().trim();
+
+            let rows = [...cachedLeaderboard];
+
+            if (searchVal) {
+                rows = rows.filter(r => (r.team_name || '').toLowerCase().includes(searchVal));
+            }
+
+            rows.sort((a, b) => {
+                let vA, vB;
+                const isPriv = currentLeaderboardState.is_private_revealed;
+
+                if (currentSortColumn === 'rank') {
+                    vA = Number(a.rank) || 9999;
+                    vB = Number(b.rank) || 9999;
+                } else if (currentSortColumn === 'team') {
+                    vA = (a.team_name || '').toLowerCase();
+                    vB = (b.team_name || '').toLowerCase();
+                } else if (currentSortColumn === 'r2') {
+                    vA = isPriv ? (a.private_r2 ?? a.best_private_r2 ?? -999) : (a.public_r2 ?? a.best_public_r2 ?? a.r2 ?? -999);
+                    vB = isPriv ? (b.private_r2 ?? b.best_private_r2 ?? -999) : (b.public_r2 ?? b.best_public_r2 ?? b.r2 ?? -999);
+                } else if (currentSortColumn === 'rmse') {
+                    vA = isPriv ? (a.private_rmse ?? a.best_private_rmse ?? 9999) : (a.public_rmse ?? a.best_public_rmse ?? a.rmse ?? 9999);
+                    vB = isPriv ? (b.private_rmse ?? b.best_private_rmse ?? 9999) : (b.public_rmse ?? b.best_public_rmse ?? b.rmse ?? 9999);
+                } else if (currentSortColumn === 'submissions') {
+                    vA = Number(a.submissions_count || a.submission_count || a.total_submissions || 0);
+                    vB = Number(b.submissions_count || b.submission_count || b.total_submissions || 0);
+                }
+
+                if (vA < vB) return sortDirection === 'asc' ? -1 : 1;
+                if (vA > vB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            if (rows.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-slate-500 font-sans text-xs">
+                            <i class="fa-solid fa-satellite-dish text-2xl text-slate-600 mb-2"></i>
+                            <p>No validated submissions found matching criteria.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            rows.forEach((item, idx) => {
+                const rank = item.rank || (idx + 1);
+                let rankBadge = `<span class="text-slate-400 font-mono font-bold">${rank}</span>`;
+                if (rank === 1) rankBadge = `<span class="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold font-mono">#1 👑</span>`;
+                else if (rank === 2) rankBadge = `<span class="px-2 py-0.5 rounded bg-slate-400/20 text-slate-200 border border-slate-400/40 font-bold font-mono">#2 🥈</span>`;
+                else if (rank === 3) rankBadge = `<span class="px-2 py-0.5 rounded bg-orange-700/20 text-orange-400 border border-orange-700/40 font-bold font-mono">#3 🥉</span>`;
+
+                const isPriv = currentLeaderboardState.is_private_revealed;
+                const r2Raw = isPriv ? (item.private_r2 ?? item.best_private_r2) : (item.public_r2 ?? item.best_public_r2 ?? item.r2);
+                const rmseRaw = isPriv ? (item.private_rmse ?? item.best_private_rmse) : (item.public_rmse ?? item.best_public_rmse ?? item.rmse);
+
+                const r2Val = r2Raw !== undefined && r2Raw !== null ? Number(r2Raw).toFixed(4) : '—';
+                const rmseVal = rmseRaw !== undefined && rmseRaw !== null ? Number(rmseRaw).toFixed(4) : '—';
+                const subCount = item.submissions_count || item.submission_count || item.total_submissions || 1;
+
+                html += `
+                    <tr class="hover:bg-white/[0.04] transition group">
+                        <td class="py-3 px-3">${rankBadge}</td>
+                        <td class="py-3 px-3 font-semibold text-white flex items-center gap-2">
+                            <span>${escapeStr(item.team_name)}</span>
+                            ${rank <= 3 ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-[#ff6600]/20 text-[#ff6600] border border-[#ff6600]/30 font-semibold">QUALIFIED</span>' : ''}
+                        </td>
+                        <td class="py-3 px-3 text-right font-bold text-[#ff6600] font-mono text-sm">${r2Val}</td>
+                        <td class="py-3 px-3 text-right text-slate-300 font-mono">${rmseVal}</td>
+                        <td class="py-3 px-3 text-center text-slate-400 font-mono">${subCount}</td>
+                        <td class="py-3 px-3 text-right text-[10px] text-slate-500 font-mono">
+                            ${escapeStr(item.timestamp || item.last_submitted || '—')}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+
+        /* =========================================================================
+           SUBMISSION INGESTION, DRAG & DROP AND RECEIPT MODAL
+           ========================================================================= */
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('field-file-csv');
+        const fileLabel = document.getElementById('label-filename');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-[#ff6600]', 'bg-[#ff6600]/10');
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-[#ff6600]', 'bg-[#ff6600]/10');
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-[#ff6600]', 'bg-[#ff6600]/10');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelected(fileInput);
+            }
+        });
+
+        function handleFileSelected(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                fileLabel.innerHTML = `<i class="fa-solid fa-file-csv"></i> <span>${escapeStr(file.name)} (${sizeMB} MB)</span>`;
+                fileLabel.classList.remove('hidden');
+            }
+        }
+
+        async function handleFormSubmission(e) {
+            e.preventDefault();
+            const alertBox = document.getElementById('box-submit-alert');
+            const submitBtn = document.getElementById('btn-submit');
+            const progressWrapper = document.getElementById('submission-progress-wrapper');
+            const progressBar = document.getElementById('submission-progress-bar');
+            const progressStatus = document.getElementById('progress-status-text');
+            const progressPct = document.getElementById('progress-percentage-text');
+
+            alertBox.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
+            progressWrapper.classList.remove('hidden');
+            progressBar.style.width = '20%';
+            progressPct.textContent = '20%';
+            progressStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[#ff6600]"></i> <span>CHECKING YOUR PREDICTIONS FILE...</span>`;
+
+            const formData = new FormData();
+            formData.append('team_name', document.getElementById('field-team-name').value.trim());
+            formData.append('email', document.getElementById('field-team-email').value.trim());
+            formData.append('submission_file', document.getElementById('field-file-csv').files[0]);
+
+            const nb = document.getElementById('field-file-nb').files[0];
+            if (nb) formData.append('notebook_file', nb);
+
+            const timer1 = setTimeout(() => {
+                progressBar.style.width = '60%';
+                progressPct.textContent = '60%';
+                progressStatus.innerHTML = `<i class="fa-solid fa-check text-slate-300"></i> <span>MATCHING 100,000 CANDIDATE IDS...</span>`;
+            }, 300);
+
+            const timer2 = setTimeout(() => {
+                progressBar.style.width = '85%';
+                progressPct.textContent = '85%';
+                progressStatus.innerHTML = `<i class="fa-solid fa-calculator text-[#ff6600]"></i> <span>SCORING R² ACCURACY AGAINST TRUTH...</span>`;
+            }, 600);
+
+            try {
+                const response = await fetch('/api/submit', { method: 'POST', body: formData });
+                const result = await response.json();
+
+                clearTimeout(timer1);
+                clearTimeout(timer2);
+
+                progressBar.style.width = '100%';
+                progressPct.textContent = '100%';
+                progressStatus.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>SCORING FINISHED!</span>`;
+
+                setTimeout(() => {
+                    progressWrapper.classList.add('hidden');
+                }, 800);
+
+                if (result.success) {
+                    document.getElementById('receipt-team').textContent = result.team_name;
+                    document.getElementById('receipt-quota').textContent = `${result.submissions_today} / ${result.max_daily_submissions} used`;
+                    document.getElementById('receipt-time').textContent = new Date().toUTCString();
+                    document.getElementById('receipt-r2').textContent = Number(result.public_r2).toFixed(4);
+                    document.getElementById('receipt-rmse').textContent = Number(result.public_rmse).toFixed(4);
+                    document.getElementById('receipt-mae').textContent = Number(result.public_mae).toFixed(4);
+
+                    openReceiptModal();
+
+                    document.getElementById('field-file-csv').value = '';
+                    document.getElementById('field-file-nb').value = '';
+                    fileLabel.classList.add('hidden');
+
+                    fetchLeaderboardData();
+                } else {
+                    alertBox.classList.remove('hidden');
+                    alertBox.className = "p-4 rounded-xl border bg-red-500/10 border-red-500/35 text-red-400 font-sans text-xs flex items-start gap-2.5 shadow-md";
+                    alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mt-0.5 text-sm"></i> <div><strong>Submission Error:</strong> ${escapeStr(result.error || 'Validation error')}</div>`;
+                }
+            } catch (err) {
+                clearTimeout(timer1);
+                clearTimeout(timer2);
+                progressWrapper.classList.add('hidden');
+                alertBox.classList.remove('hidden');
+                alertBox.className = "p-4 rounded-xl border bg-red-500/10 border-red-500/35 text-red-400 font-sans text-xs flex items-start gap-2.5 shadow-md";
+                alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation mt-0.5 text-sm"></i> <div><strong>Network Error:</strong> Could not connect to the scoring server.</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        }
+
+        // Receipt Modal Handlers
+        function openReceiptModal() {
+            document.getElementById('modal-receipt').classList.remove('hidden');
+        }
+        function closeReceiptModal() {
+            document.getElementById('modal-receipt').classList.add('hidden');
+        }
+
+        // Admin PIN Modal Handlers
+        function openAdminModal() {
+            document.getElementById('modal-admin').classList.remove('hidden');
+            document.getElementById('input-admin-pin').focus();
+        }
+        function closeAdminModal() {
+            document.getElementById('modal-admin').classList.add('hidden');
+            document.getElementById('input-admin-pin').value = '';
+        }
+
+        async function executeAdminToggle() {
+            const pin = document.getElementById('input-admin-pin').value.trim();
+            if (!pin) {
+                alert('Please enter the Admin PIN.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/toggle-private', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({pin})
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    closeAdminModal();
+                    fetchLeaderboardData();
+                } else {
+                    alert(result.error || 'Incorrect PIN: Access Denied.');
+                }
+            } catch (err) {
+                alert('Connection failure contacting admin controller.');
+            }
+        }
+
+        function escapeStr(s) {
+            return (s || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Initialize leaderboard on DOM load
+        fetchLeaderboardData();
+    </script>
+
+    <!-- =========================================================================
+         REACT BITS TEXT PRESSURE ENGINE (PORTED FROM REACT BITS / JUAN FUENTES)
+         Features: Variable font axes ('wght' 100-950, 'wdth' 25-151),
+         Euclidean distance tracking, exponential inertia, idle wave breathing,
+         click ripple shockwaves, and OKLab color mixing.
+         ========================================================================= -->
+    <script>
+    (function() {
+        const RIPPLE_LIFE = 1.3;
+        const MAX_RIPPLES = 6;
+        const WAVE_PERIOD = 3.2;
+        const PULSE_PERIOD = 2.8;
+        const PULSE_DEPTH = 0.42;
+
+        const dist = (a, b) => {
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+
+        const clamp01 = val => Math.min(1, Math.max(0, val));
+
+        const getIdlePressure = (mode, position, clock, spread) => {
+            if (mode === 'wave') {
+                const crest = 0.5 + 0.5 * Math.cos(Math.PI * 2 * (position / spread - clock / WAVE_PERIOD));
+                return crest * crest;
+            }
+            if (mode === 'pulse') {
+                const lag = Math.abs(position - 0.5) * 0.4;
+                const breath = 0.5 - 0.5 * Math.cos(Math.PI * 2 * (clock / PULSE_PERIOD - lag));
+                return PULSE_DEPTH * breath * breath * (3 - 2 * breath);
+            }
+            return 0;
+        };
+
+        const getRipplePressure = (ripples, point, now, span) => {
+            const band = Math.max(span * 0.14, 32);
+            let total = 0;
+            for (const ripple of ripples) {
+                const age = (now - ripple.start) / 1000;
+                if (age <= 0 || age >= RIPPLE_LIFE) continue;
+                const offset = (dist(ripple, point) - age * span * 1.25) / band;
+                if (offset <= -1 || offset >= 1) continue;
+                const fade = 1 - age / RIPPLE_LIFE;
+                const swell = (1 - offset * offset) ** 2 * fade * fade * Math.min(1, age / 0.06);
+                total = 1 - (1 - total) * (1 - swell);
+            }
+            return total;
+        };
+
+        class TextPressureInstance {
+            constructor(container, options = {}) {
+                this.container = container;
+                this.text = options.text || container.getAttribute('data-text') || container.textContent.trim();
+                this.flex = options.flex !== undefined ? options.flex : (container.getAttribute('data-flex') !== 'false');
+                this.radius = options.radius !== undefined ? options.radius : parseFloat(container.getAttribute('data-radius') || '0.5');
+                this.smoothing = options.smoothing !== undefined ? options.smoothing : 0.4;
+                this.idle = options.idle || 'wave';
+                this.idleSpeed = options.idleSpeed || 1.0;
+                this.clickRipple = options.clickRipple !== false;
+                this.textColor = options.textColor || container.getAttribute('data-color') || '#ffffff';
+                this.pressureColor = this.textColor; // No color shifting: keep pure uniform text color
+                this.minFontSize = options.minFontSize || parseInt(container.getAttribute('data-min-font-size') || '28', 10);
+                this.minWght = options.minWght || 100;
+                this.maxWght = options.maxWght || 1000;
+                this.minWdth = options.minWdth || 25;
+                this.maxWdth = options.maxWdth || 151;
+
+                this.chars = Array.from(this.text);
+                this.spans = [];
+                this.applied = [];
+                this.ripples = [];
+                this.mouse = { x: 0, y: 0 };
+                this.cursor = { x: 0, y: 0, seen: false };
+                this.clock = 0;
+                this.last = 0;
+                this.engage = 0;
+                this.idleFrames = 0;
+                this.rafId = 0;
+
+                this.buildDOM();
+                this.initEvents();
+                this.updateDimensions();
+                this.wake();
+            }
+
+            buildDOM() {
+                this.container.innerHTML = '';
+                this.title = document.createElement('h2');
+                this.title.className = 'text-pressure-title';
+                this.title.setAttribute('aria-label', this.text);
+                this.title.style.display = this.flex ? 'flex' : 'inline-block';
+                this.title.style.justifyContent = this.flex ? 'space-between' : 'flex-start';
+                this.title.style.color = this.textColor;
+
+                this.chars.forEach((ch, i) => {
+                    const span = document.createElement('span');
+                    span.textContent = ch === ' ' ? '\u00A0' : ch;
+                    span.setAttribute('data-char', ch);
+                    span.setAttribute('aria-hidden', 'true');
+                    this.title.appendChild(span);
+                    this.spans.push(span);
+                });
+
+                this.container.appendChild(this.title);
+
+                const rect = this.container.getBoundingClientRect();
+                this.mouse.x = rect.left + rect.width / 2;
+                this.mouse.y = rect.top + rect.height / 2;
+                this.cursor.x = this.mouse.x;
+                this.cursor.y = this.mouse.y;
+            }
+
+            updateDimensions() {
+                const containerW = this.container.getBoundingClientRect().width || this.container.parentElement.clientWidth;
+                if (!containerW) return;
+                
+                // Dynamic font size fitting container cleanly
+                const divisor = Math.max(this.chars.length * 0.58, 2);
+                let computedSize = Math.floor(containerW / divisor);
+                computedSize = Math.max(this.minFontSize, Math.min(computedSize, 84));
+                this.title.style.fontSize = `${computedSize}px`;
+            }
+
+            initEvents() {
+                const track = (x, y) => {
+                    this.cursor.x = x;
+                    this.cursor.y = y;
+                    this.cursor.seen = true;
+                    this.wake();
+                };
+
+                window.addEventListener('mousemove', e => track(e.clientX, e.clientY));
+                window.addEventListener('touchstart', e => {
+                    if (e.touches[0]) track(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: true });
+                window.addEventListener('touchmove', e => {
+                    if (e.touches[0]) track(e.touches[0].clientX, e.touches[0].clientY);
+                }, { passive: true });
+                window.addEventListener('mouseleave', () => {
+                    this.cursor.seen = false;
+                    this.wake();
+                });
+
+                this.container.addEventListener('pointerdown', e => {
+                    if (!this.clickRipple) return;
+                    this.ripples.push({ x: e.clientX, y: e.clientY, start: performance.now() });
+                    if (this.ripples.length > MAX_RIPPLES) this.ripples.shift();
+                    this.wake();
+                });
+
+                window.addEventListener('resize', () => {
+                    this.updateDimensions();
+                    this.wake();
+                });
+            }
+
+            tick(now) {
+                this.rafId = 0;
+                const elapsed = this.last ? Math.min(now - this.last, 64) : 1000 / 60;
+                this.last = now;
+
+                const lag = 1000 * this.smoothing * this.smoothing;
+                const follow = lag > 1 ? 1 - Math.exp(-elapsed / lag) : 1;
+                this.mouse.x += (this.cursor.x - this.mouse.x) * follow;
+                this.mouse.y += (this.cursor.y - this.mouse.y) * follow;
+
+                const box = this.container.getBoundingClientRect();
+                const pad = 120;
+                const inside = this.cursor.x >= (box.left - pad) && this.cursor.x <= (box.right + pad) &&
+                               this.cursor.y >= (box.top - pad) && this.cursor.y <= (box.bottom + pad);
+                const present = this.cursor.seen && inside ? 1 : 0;
+
+                this.engage += (present - this.engage) * (1 - Math.exp(-elapsed / 320));
+                if (Math.abs(present - this.engage) < 0.002) this.engage = present;
+
+                const idling = this.idle !== 'none' && this.engage < 1;
+                if (idling) this.clock += (elapsed / 1000) * this.idleSpeed;
+
+                while (this.ripples.length && now - this.ripples[0].start > RIPPLE_LIFE * 1000) {
+                    this.ripples.shift();
+                }
+
+                const titleRect = this.title.getBoundingClientRect();
+                const maxDist = Math.max(titleRect.width * this.radius, 1);
+                const spread = Math.max(this.radius * 2, 0.2);
+
+                const centers = this.spans.map(span => {
+                    const r = span.getBoundingClientRect();
+                    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+                });
+
+                let changed = false;
+                this.spans.forEach((span, i) => {
+                    const center = centers[i];
+                    if (!center) return;
+
+                    let pressure = clamp01(1 - dist(this.mouse, center) / maxDist);
+                    if (idling) {
+                        const position = (center.x - titleRect.left) / Math.max(titleRect.width, 1);
+                        const resting = getIdlePressure(this.idle, position, this.clock, spread);
+                        pressure = resting + (pressure - resting) * this.engage;
+                    }
+                    if (this.ripples.length) {
+                        const swell = getRipplePressure(this.ripples, center, now, titleRect.width);
+                        pressure = 1 - (1 - pressure) * (1 - swell);
+                    }
+
+                    const wght = Math.floor(this.minWght + (this.maxWght - this.minWght) * pressure);
+                    const wdth = Math.floor(this.minWdth + (this.maxWdth - this.minWdth) * pressure);
+                    const scale = (1 + 0.12 * pressure).toFixed(3);
+                    const settings = `'wght' ${wght}, 'wdth' ${wdth}`;
+
+                    const prev = this.applied[i];
+                    if (!prev || prev.settings !== settings || prev.scale !== scale) {
+                        span.style.fontVariationSettings = settings;
+                        span.style.transform = `scale(${scale})`;
+                        span.style.color = this.textColor;
+                        span.style.textShadow = 'none';
+                        this.applied[i] = { settings, scale };
+                        changed = true;
+                    }
+                });
+
+                const moving = Math.abs(this.cursor.x - this.mouse.x) > 0.1 || Math.abs(this.cursor.y - this.mouse.y) > 0.1;
+                const animating = moving || idling || this.engage !== present || this.ripples.length > 0;
+                this.idleFrames = animating ? 0 : this.idleFrames + 1;
+
+                if (animating || (changed && this.idleFrames < 60)) {
+                    this.rafId = requestAnimationFrame(t => this.tick(t));
+                } else {
+                    this.last = 0;
+                }
+            }
+
+            wake() {
+                if (!this.rafId) {
+                    this.rafId = requestAnimationFrame(t => this.tick(t));
+                }
+            }
+        }
+
+        // Initialize all Text Pressure containers on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const containers = document.querySelectorAll('.text-pressure-container');
+            containers.forEach(c => new TextPressureInstance(c));
+        });
+
+        // Trigger right away in case DOMContentLoaded already fired
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            const containers = document.querySelectorAll('.text-pressure-container');
+            containers.forEach(c => new TextPressureInstance(c));
+        }
+    })();
+    </script>
+
+</body>
+</html>
