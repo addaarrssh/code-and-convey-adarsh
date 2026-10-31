@@ -13,10 +13,10 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Fonts: Plus Jakarta Sans, JetBrains Mono, and Roboto Flex (Full Variable Font Axes for Text Pressure) -->
+    <!-- Fonts: Plus Jakarta Sans and JetBrains Mono (Fast, Ultra-lightweight) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script>
@@ -216,12 +216,22 @@
         .sortable-th:hover {
             color: #ff6600;
         }
+    <style>
+        /* Pure lightweight CSS static starfield background: 0% CPU, 0% GPU load */
+        .ambient-space-bg {
+            background-color: #050811;
+            background-image: 
+                radial-gradient(1px 1px at 25px 35px, rgba(255, 255, 255, 0.45), transparent),
+                radial-gradient(1px 1px at 80px 140px, rgba(255, 255, 255, 0.35), transparent),
+                radial-gradient(1.5px 1.5px at 170px 70px, rgba(255, 255, 255, 0.6), transparent),
+                radial-gradient(1px 1px at 240px 220px, rgba(255, 102, 0, 0.4), transparent),
+                radial-gradient(1.5px 1.5px at 320px 110px, rgba(255, 255, 255, 0.5), transparent);
+            background-repeat: repeat;
+            background-size: 360px 360px;
+        }
     </style>
 </head>
-<body class="selection:bg-[#ff6600] selection:text-white">
-
-    <!-- Subtle Background Stars Particle Canvas -->
-    <canvas id="stars-canvas"></canvas>
+<body class="ambient-space-bg selection:bg-[#ff6600] selection:text-white">
 
     <!-- Content Workspace -->
     <div class="relative z-10 flex flex-col min-h-screen">
@@ -796,81 +806,9 @@
     </div>
 
     <!-- =========================================================================
-         BACKGROUND STARS CANVAS JAVASCRIPT
+         LIGHTWEIGHT CLIENT CORE & TELEMETRY ENGINE
          ========================================================================= -->
     <script>
-        (function initStars() {
-            const canvas = document.getElementById('stars-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-
-            let width = 0, height = 0;
-            let dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-            function resize() {
-                dpr = Math.min(window.devicePixelRatio || 1, 2);
-                width = window.innerWidth;
-                height = window.innerHeight;
-                canvas.width = Math.floor(width * dpr);
-                canvas.height = Math.floor(height * dpr);
-                ctx.scale(dpr, dpr);
-            }
-            window.addEventListener('resize', resize);
-            resize();
-
-            const STAR_COUNT = 280;
-            const stars = [];
-
-            for (let i = 0; i < STAR_COUNT; i++) {
-                stars.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    size: Math.random() * 1.3 + 0.4,
-                    alpha: Math.random() * 0.7 + 0.3,
-                    speed: Math.random() * 0.02 + 0.005,
-                    phase: Math.random() * Math.PI * 2
-                });
-            }
-
-            let simTime = 0;
-            let lastTime = performance.now();
-
-            function render(now) {
-                const delta = Math.min((now - lastTime) / 1000, 0.1);
-                lastTime = now;
-                simTime += delta * 1000;
-
-                ctx.clearRect(0, 0, width, height);
-
-                for (let i = 0; i < stars.length; i++) {
-                    const star = stars[i];
-                    const twinkle = 0.5 + 0.5 * Math.sin(simTime * star.speed + star.phase);
-                    const currentAlpha = star.alpha * twinkle;
-
-                    ctx.beginPath();
-                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
-                    ctx.fill();
-                }
-
-                rafId = requestAnimationFrame(render);
-            }
-
-            let rafId = requestAnimationFrame(render);
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) cancelAnimationFrame(rafId);
-                else {
-                    lastTime = performance.now();
-                    rafId = requestAnimationFrame(render);
-                }
-            });
-        })();
-
-
-        
-
-
         /* =========================================================================
            CLIENT STATE, MULTI-COLUMN SORTING & TELEMETRY ENGINE
            ========================================================================= */
@@ -1203,262 +1141,5 @@
         // Initialize leaderboard on DOM load
         fetchLeaderboardData();
     </script>
-
-    <!-- =========================================================================
-         REACT BITS TEXT PRESSURE ENGINE (PORTED FROM REACT BITS / JUAN FUENTES)
-         Features: Variable font axes ('wght' 100-950, 'wdth' 25-151),
-         Euclidean distance tracking, exponential inertia, idle wave breathing,
-         click ripple shockwaves, and OKLab color mixing.
-         ========================================================================= -->
-    <script>
-    (function() {
-        const RIPPLE_LIFE = 1.3;
-        const MAX_RIPPLES = 6;
-        const WAVE_PERIOD = 3.2;
-        const PULSE_PERIOD = 2.8;
-        const PULSE_DEPTH = 0.42;
-
-        const dist = (a, b) => {
-            const dx = b.x - a.x;
-            const dy = b.y - a.y;
-            return Math.sqrt(dx * dx + dy * dy);
-        };
-
-        const clamp01 = val => Math.min(1, Math.max(0, val));
-
-        const getIdlePressure = (mode, position, clock, spread) => {
-            if (mode === 'wave') {
-                const crest = 0.5 + 0.5 * Math.cos(Math.PI * 2 * (position / spread - clock / WAVE_PERIOD));
-                return crest * crest;
-            }
-            if (mode === 'pulse') {
-                const lag = Math.abs(position - 0.5) * 0.4;
-                const breath = 0.5 - 0.5 * Math.cos(Math.PI * 2 * (clock / PULSE_PERIOD - lag));
-                return PULSE_DEPTH * breath * breath * (3 - 2 * breath);
-            }
-            return 0;
-        };
-
-        const getRipplePressure = (ripples, point, now, span) => {
-            const band = Math.max(span * 0.14, 32);
-            let total = 0;
-            for (const ripple of ripples) {
-                const age = (now - ripple.start) / 1000;
-                if (age <= 0 || age >= RIPPLE_LIFE) continue;
-                const offset = (dist(ripple, point) - age * span * 1.25) / band;
-                if (offset <= -1 || offset >= 1) continue;
-                const fade = 1 - age / RIPPLE_LIFE;
-                const swell = (1 - offset * offset) ** 2 * fade * fade * Math.min(1, age / 0.06);
-                total = 1 - (1 - total) * (1 - swell);
-            }
-            return total;
-        };
-
-        class TextPressureInstance {
-            constructor(container, options = {}) {
-                this.container = container;
-                this.text = options.text || container.getAttribute('data-text') || container.textContent.trim();
-                this.flex = options.flex !== undefined ? options.flex : (container.getAttribute('data-flex') !== 'false');
-                this.radius = options.radius !== undefined ? options.radius : parseFloat(container.getAttribute('data-radius') || '0.5');
-                this.smoothing = options.smoothing !== undefined ? options.smoothing : 0.4;
-                this.idle = options.idle || 'wave';
-                this.idleSpeed = options.idleSpeed || 1.0;
-                this.clickRipple = options.clickRipple !== false;
-                this.textColor = options.textColor || container.getAttribute('data-color') || '#ffffff';
-                this.pressureColor = this.textColor; // No color shifting: keep pure uniform text color
-                this.minFontSize = options.minFontSize || parseInt(container.getAttribute('data-min-font-size') || '28', 10);
-                this.minWght = options.minWght || 100;
-                this.maxWght = options.maxWght || 1000;
-                this.minWdth = options.minWdth || 25;
-                this.maxWdth = options.maxWdth || 151;
-
-                this.chars = Array.from(this.text);
-                this.spans = [];
-                this.applied = [];
-                this.ripples = [];
-                this.mouse = { x: 0, y: 0 };
-                this.cursor = { x: 0, y: 0, seen: false };
-                this.clock = 0;
-                this.last = 0;
-                this.engage = 0;
-                this.idleFrames = 0;
-                this.rafId = 0;
-
-                this.buildDOM();
-                this.initEvents();
-                this.updateDimensions();
-                this.wake();
-            }
-
-            buildDOM() {
-                this.container.innerHTML = '';
-                this.title = document.createElement('h2');
-                this.title.className = 'text-pressure-title';
-                this.title.setAttribute('aria-label', this.text);
-                this.title.style.display = this.flex ? 'flex' : 'inline-block';
-                this.title.style.justifyContent = this.flex ? 'space-between' : 'flex-start';
-                this.title.style.color = this.textColor;
-
-                this.chars.forEach((ch, i) => {
-                    const span = document.createElement('span');
-                    span.textContent = ch === ' ' ? '\u00A0' : ch;
-                    span.setAttribute('data-char', ch);
-                    span.setAttribute('aria-hidden', 'true');
-                    this.title.appendChild(span);
-                    this.spans.push(span);
-                });
-
-                this.container.appendChild(this.title);
-
-                const rect = this.container.getBoundingClientRect();
-                this.mouse.x = rect.left + rect.width / 2;
-                this.mouse.y = rect.top + rect.height / 2;
-                this.cursor.x = this.mouse.x;
-                this.cursor.y = this.mouse.y;
-            }
-
-            updateDimensions() {
-                const containerW = this.container.getBoundingClientRect().width || this.container.parentElement.clientWidth;
-                if (!containerW) return;
-                
-                // Dynamic font size fitting container cleanly
-                const divisor = Math.max(this.chars.length * 0.58, 2);
-                let computedSize = Math.floor(containerW / divisor);
-                computedSize = Math.max(this.minFontSize, Math.min(computedSize, 84));
-                this.title.style.fontSize = `${computedSize}px`;
-            }
-
-            initEvents() {
-                const track = (x, y) => {
-                    this.cursor.x = x;
-                    this.cursor.y = y;
-                    this.cursor.seen = true;
-                    this.wake();
-                };
-
-                window.addEventListener('mousemove', e => track(e.clientX, e.clientY));
-                window.addEventListener('touchstart', e => {
-                    if (e.touches[0]) track(e.touches[0].clientX, e.touches[0].clientY);
-                }, { passive: true });
-                window.addEventListener('touchmove', e => {
-                    if (e.touches[0]) track(e.touches[0].clientX, e.touches[0].clientY);
-                }, { passive: true });
-                window.addEventListener('mouseleave', () => {
-                    this.cursor.seen = false;
-                    this.wake();
-                });
-
-                this.container.addEventListener('pointerdown', e => {
-                    if (!this.clickRipple) return;
-                    this.ripples.push({ x: e.clientX, y: e.clientY, start: performance.now() });
-                    if (this.ripples.length > MAX_RIPPLES) this.ripples.shift();
-                    this.wake();
-                });
-
-                window.addEventListener('resize', () => {
-                    this.updateDimensions();
-                    this.wake();
-                });
-            }
-
-            tick(now) {
-                this.rafId = 0;
-                const elapsed = this.last ? Math.min(now - this.last, 64) : 1000 / 60;
-                this.last = now;
-
-                const lag = 1000 * this.smoothing * this.smoothing;
-                const follow = lag > 1 ? 1 - Math.exp(-elapsed / lag) : 1;
-                this.mouse.x += (this.cursor.x - this.mouse.x) * follow;
-                this.mouse.y += (this.cursor.y - this.mouse.y) * follow;
-
-                const box = this.container.getBoundingClientRect();
-                const pad = 120;
-                const inside = this.cursor.x >= (box.left - pad) && this.cursor.x <= (box.right + pad) &&
-                               this.cursor.y >= (box.top - pad) && this.cursor.y <= (box.bottom + pad);
-                const present = this.cursor.seen && inside ? 1 : 0;
-
-                this.engage += (present - this.engage) * (1 - Math.exp(-elapsed / 320));
-                if (Math.abs(present - this.engage) < 0.002) this.engage = present;
-
-                const idling = this.idle !== 'none' && this.engage < 1;
-                if (idling) this.clock += (elapsed / 1000) * this.idleSpeed;
-
-                while (this.ripples.length && now - this.ripples[0].start > RIPPLE_LIFE * 1000) {
-                    this.ripples.shift();
-                }
-
-                const titleRect = this.title.getBoundingClientRect();
-                const maxDist = Math.max(titleRect.width * this.radius, 1);
-                const spread = Math.max(this.radius * 2, 0.2);
-
-                const centers = this.spans.map(span => {
-                    const r = span.getBoundingClientRect();
-                    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-                });
-
-                let changed = false;
-                this.spans.forEach((span, i) => {
-                    const center = centers[i];
-                    if (!center) return;
-
-                    let pressure = clamp01(1 - dist(this.mouse, center) / maxDist);
-                    if (idling) {
-                        const position = (center.x - titleRect.left) / Math.max(titleRect.width, 1);
-                        const resting = getIdlePressure(this.idle, position, this.clock, spread);
-                        pressure = resting + (pressure - resting) * this.engage;
-                    }
-                    if (this.ripples.length) {
-                        const swell = getRipplePressure(this.ripples, center, now, titleRect.width);
-                        pressure = 1 - (1 - pressure) * (1 - swell);
-                    }
-
-                    const wght = Math.floor(this.minWght + (this.maxWght - this.minWght) * pressure);
-                    const wdth = Math.floor(this.minWdth + (this.maxWdth - this.minWdth) * pressure);
-                    const scale = (1 + 0.12 * pressure).toFixed(3);
-                    const settings = `'wght' ${wght}, 'wdth' ${wdth}`;
-
-                    const prev = this.applied[i];
-                    if (!prev || prev.settings !== settings || prev.scale !== scale) {
-                        span.style.fontVariationSettings = settings;
-                        span.style.transform = `scale(${scale})`;
-                        span.style.color = this.textColor;
-                        span.style.textShadow = 'none';
-                        this.applied[i] = { settings, scale };
-                        changed = true;
-                    }
-                });
-
-                const moving = Math.abs(this.cursor.x - this.mouse.x) > 0.1 || Math.abs(this.cursor.y - this.mouse.y) > 0.1;
-                const animating = moving || idling || this.engage !== present || this.ripples.length > 0;
-                this.idleFrames = animating ? 0 : this.idleFrames + 1;
-
-                if (animating || (changed && this.idleFrames < 60)) {
-                    this.rafId = requestAnimationFrame(t => this.tick(t));
-                } else {
-                    this.last = 0;
-                }
-            }
-
-            wake() {
-                if (!this.rafId) {
-                    this.rafId = requestAnimationFrame(t => this.tick(t));
-                }
-            }
-        }
-
-        // Initialize all Text Pressure containers on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            const containers = document.querySelectorAll('.text-pressure-container');
-            containers.forEach(c => new TextPressureInstance(c));
-        });
-
-        // Trigger right away in case DOMContentLoaded already fired
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            const containers = document.querySelectorAll('.text-pressure-container');
-            containers.forEach(c => new TextPressureInstance(c));
-        }
-    })();
-    </script>
-
 </body>
 </html>
