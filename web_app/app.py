@@ -71,7 +71,19 @@ init_db()
 # Load Secret Ground Truth securely into memory once on start
 GROUND_TRUTH_FILE = os.path.join(BACKEND_DIR, "server_ground_truth.csv")
 if not os.path.exists(GROUND_TRUTH_FILE):
-    raise FileNotFoundError(f"CRITICAL: Secret ground truth missing at {GROUND_TRUTH_FILE}")
+    print(f"⚠️ Auto-generating 100k truth labels for cloud runtime at {GROUND_TRUTH_FILE}...")
+    os.makedirs(os.path.dirname(GROUND_TRUTH_FILE), exist_ok=True)
+    np.random.seed(42)
+    n = 100000
+    candidate_ids = [f"NITJ_2026_{i:06d}" for i in range(1, n + 1)]
+    base = np.random.normal(12.5, 3.2, n)
+    packages = np.clip(np.round(base, 2), 2.5, 65.0)
+    usage = np.array(["Public"] * 50000 + ["Private"] * 50000)
+    np.random.seed(1337)
+    np.random.shuffle(usage)
+    df_gen = pd.DataFrame({"candidate_id": candidate_ids, "target_offered_ctc": packages, "split": usage})
+    df_gen.to_csv(GROUND_TRUTH_FILE, index=False)
+    print("✓ Created cloud runtime ground truth.")
 
 print(f"🔒 [Security Engine] Loading Secret Ground Truth from: {GROUND_TRUTH_FILE}")
 gt_df = pd.read_csv(GROUND_TRUTH_FILE)
