@@ -247,7 +247,7 @@
                     <span class="text-slate-700">|</span>
                     <span>LIMIT: <strong class="text-slate-200 font-bold">5 SUBMISSIONS / DAY</strong></span>
                     <span class="text-slate-700">|</span>
-                    <button onclick="openAdminModal()" class="text-slate-400 hover:text-[#ff6600] transition flex items-center gap-1.5" title="Admin Security Clearance">
+                    <button onclick="handleAdminButtonClick()" id="btn-admin-top" class="text-slate-400 hover:text-[#ff6600] transition flex items-center gap-1.5" title="Admin Security Clearance">
                         <i class="fa-solid fa-lock text-[10px]"></i>
                         <span>ADMIN LOGIN</span>
                     </button>
@@ -293,9 +293,9 @@
 
                 <!-- Right Action -->
                 <div>
-                    <button onclick="openAdminModal()" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-[#ff6600]/50 rounded-xl text-xs font-medium text-slate-200 hover:text-white transition flex items-center gap-2">
+                    <button onclick="handleAdminButtonClick()" id="btn-admin-nav" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-[#ff6600]/50 rounded-xl text-xs font-medium text-slate-200 hover:text-white transition flex items-center gap-2">
                         <i class="fa-solid fa-key text-[11px] text-amber-400"></i>
-                        <span>Admin PIN</span>
+                        <span id="label-admin-nav">Admin PIN</span>
                     </button>
                 </div>
 
@@ -816,7 +816,13 @@
 
         async function fetchLeaderboardData() {
             try {
-                const response = await fetch('/api/leaderboard');
+                const savedPin = sessionStorage.getItem('cc_admin_pin');
+                const reqHeaders = {};
+                if (savedPin) {
+                    reqHeaders['X-Admin-PIN'] = savedPin;
+                }
+
+                const response = await fetch('/api/leaderboard', { headers: reqHeaders });
                 const data = await response.json();
 
                 cachedLeaderboard = data.leaderboard || [];
@@ -839,18 +845,64 @@
                 }
 
                 const badge = document.getElementById('badge-benchmark-type');
-                if (data.is_private_revealed) {
+                if (data.is_admin_viewer) {
+                    badge.className = "px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 border border-amber-500/50 text-amber-300 flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.25)]";
+                    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> 🔒 ORGANIZER AUDIT MODE (PRIVATE SCORES • VISIBLE ONLY TO YOU)`;
+                } else if (data.is_global_revealed) {
                     badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center gap-1.5";
-                    badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> PRIVATE GROUND TRUTH (100,000 ROWS)`;
+                    badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> FINAL PRIVATE STANDINGS (100,000 ROWS)`;
                 } else {
                     badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5";
                     badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> PUBLIC BENCHMARK (50,000 ROWS)`;
                 }
 
+                updateAdminNavButtons(data.is_admin_viewer);
                 renderLeaderboardTable();
             } catch (err) {
                 console.error("Leaderboard sync failure:", err);
             }
+        }
+
+        function updateAdminNavButtons(isAdmin) {
+            const btnNav = document.getElementById('btn-admin-nav');
+            const labelNav = document.getElementById('label-admin-nav');
+            const btnTop = document.getElementById('btn-admin-top');
+
+            if (isAdmin) {
+                if (btnNav) {
+                    btnNav.className = "px-3.5 py-2 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/50 rounded-xl text-xs font-bold text-amber-300 hover:text-white transition flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.25)]";
+                }
+                if (labelNav) {
+                    labelNav.textContent = "Lock Admin View";
+                }
+                if (btnTop) {
+                    btnTop.innerHTML = `<i class="fa-solid fa-lock-open text-[10px] text-amber-400"></i> <span class="text-amber-300">ADMIN ACTIVE (LOCK)</span>`;
+                }
+            } else {
+                if (btnNav) {
+                    btnNav.className = "px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-[#ff6600]/50 rounded-xl text-xs font-medium text-slate-200 hover:text-white transition flex items-center gap-2";
+                }
+                if (labelNav) {
+                    labelNav.textContent = "Admin PIN";
+                }
+                if (btnTop) {
+                    btnTop.innerHTML = `<i class="fa-solid fa-lock text-[10px]"></i> <span>ADMIN LOGIN</span>`;
+                }
+            }
+        }
+
+        function handleAdminButtonClick() {
+            if (sessionStorage.getItem('cc_admin_pin')) {
+                logoutAdmin();
+            } else {
+                openAdminModal();
+            }
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('cc_admin_pin');
+            alert('Admin view locked. Reset to Public Leaderboard.');
+            fetchLeaderboardData();
         }
 
         function sortLeaderboard(col) {
@@ -1092,7 +1144,7 @@
         async function executeAdminToggle() {
             const pin = document.getElementById('input-admin-pin').value.trim();
             if (!pin) {
-                alert('Please enter the Admin PIN.');
+                alert('Please enter your Secret Admin PIN.');
                 return;
             }
 
@@ -1100,12 +1152,13 @@
                 const response = await fetch('/api/admin/toggle-private', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({pin})
+                    body: JSON.stringify({pin: pin, action: 'session_unlock'})
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert(result.message);
+                    sessionStorage.setItem('cc_admin_pin', pin);
                     closeAdminModal();
+                    alert('Organizer Audit Mode Unlocked!\n\nPrivate rankings are now visible ONLY on this browser tab.\n\nAll other users and public participants will still see ONLY the public leaderboard.');
                     fetchLeaderboardData();
                 } else {
                     alert(result.error || 'Incorrect PIN: Access Denied.');
