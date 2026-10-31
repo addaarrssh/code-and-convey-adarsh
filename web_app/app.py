@@ -26,7 +26,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "competition_vault.db")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 # Admin PIN (can also be read from environment variable)
-ADMIN_PIN = os.environ.get("ADMIN_PIN", "ACC2026")
+ADMIN_PIN = os.environ.get("ADMIN_PIN", "MANNU")
 
 # Database Initialization
 def get_db():
@@ -396,6 +396,6 @@ if __name__ == "__main__":
     print("\n" + "="*65)
     print("🔒 CODE & CONVEY COMPETITION PORTAL (HARDENED PRODUCTION ENGINE)")
     print(f"📍 URL: http://0.0.0.0:{port}")
-    print(f"🔑 Secret Admin PIN: {ADMIN_PIN}")
+    print("🔑 Secret Admin PIN: [CONFIGURED SECURELY]")
     print("="*65 + "\n")
     app.run(host="0.0.0.0", port=port, debug=False)

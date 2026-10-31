@@ -8,5 +8,5 @@ services:
       - key: PORT
         value: 8080
       - key: ADMIN_PIN
-        value: ACC2026
+        value: MANNU
     plan: free

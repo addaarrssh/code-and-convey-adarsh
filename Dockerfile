@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r web_app/requirements.txt
 EXPOSE 8080
 
 ENV PORT=8080
-ENV ADMIN_PIN=ACC2026
+ENV ADMIN_PIN=MANNU
 
 # Run app
 WORKDIR /app/web_app
