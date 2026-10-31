@@ -100,6 +100,42 @@ y_true_private = np.array([gt_dict[cid] for cid in private_ids], dtype=np.float6
 
 print(f"✓ [Security Engine] Vault initialized with {len(gt_df)} secret records (50k Public / 50k Private).")
 
+# Ensure participant starter datasets exist
+os.makedirs(PARTICIPANT_DIR, exist_ok=True)
+SAMPLE_SUB_FILE = os.path.join(PARTICIPANT_DIR, "sample_submission.csv")
+if not os.path.exists(SAMPLE_SUB_FILE):
+    sub_df = pd.DataFrame({"candidate_id": [f"NITJ_CC_{200000 + i}" for i in range(1, 100001)], "target_offered_ctc": [12.50] * 100000})
+    sub_df.to_csv(SAMPLE_SUB_FILE, index=False)
+
+TEST_FILE = os.path.join(PARTICIPANT_DIR, "test.csv")
+if not os.path.exists(TEST_FILE):
+    test_df = pd.DataFrame({
+        "candidate_id": [f"NITJ_CC_{200000 + i}" for i in range(1, 100001)],
+        "branch": np.random.choice(["CSE", "ECE", "EE", "ME", "CE", "MME", "PIE"], 100000),
+        "cgpa": np.round(np.random.uniform(6.0, 9.8, 100000), 2),
+        "dsa_rating": np.random.randint(1200, 2400, 100000),
+        "core_subject_score": np.round(np.random.uniform(40.0, 99.0, 100000), 1),
+        "internships_completed": np.random.choice([0, 1, 2, 3], 100000, p=[0.3, 0.45, 0.2, 0.05]),
+        "project_count": np.random.randint(1, 6, 100000),
+        "interview_feedback_notes": ["Solid technical acumen and analytical aptitude."]*100000
+    })
+    test_df.to_csv(TEST_FILE, index=False)
+
+TRAIN_FILE = os.path.join(PARTICIPANT_DIR, "train.csv")
+if not os.path.exists(TRAIN_FILE):
+    train_df = pd.DataFrame({
+        "candidate_id": [f"NITJ_CC_{100000 + i}" for i in range(1, 100001)],
+        "branch": np.random.choice(["CSE", "ECE", "EE", "ME", "CE", "MME", "PIE"], 100000),
+        "cgpa": np.round(np.random.uniform(6.0, 9.8, 100000), 2),
+        "dsa_rating": np.random.randint(1200, 2400, 100000),
+        "core_subject_score": np.round(np.random.uniform(40.0, 99.0, 100000), 1),
+        "internships_completed": np.random.choice([0, 1, 2, 3], 100000, p=[0.3, 0.45, 0.2, 0.05]),
+        "project_count": np.random.randint(1, 6, 100000),
+        "interview_feedback_notes": ["Solid technical acumen and analytical aptitude."]*100000,
+        "target_offered_ctc": np.round(np.random.normal(12.5, 3.2, 100000), 2)
+    })
+    train_df.to_csv(TRAIN_FILE, index=False)
+
 # Routes
 
 @app.route("/")
