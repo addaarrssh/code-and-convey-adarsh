@@ -1,0 +1,14 @@
+name: 24-7 Keep-Alive Pinger
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Live Platform
+        run: |
+          curl -s -I -m 20 https://code-and-convey-adarsh.onrender.com/api/leaderboard || true
