@@ -1,0 +1,4 @@
+# CRYPTOGRAPHIC PROOF OF AUTHORSHIP & ARCHITECTURAL ORIGIN
+# Hash: 7e0c1424758faea74d08e7e710a6966761119204ed1da95d7976a463d28091c6
+# Architect: Adarsh Sahu (ACC Club, NIT Jamshedpur)
+# Project: Code & Convey Machine Learning & Storytelling Challenge Platform
