@@ -319,18 +319,16 @@
                             <span>MACHINE LEARNING CHALLENGE • ROUND 1</span>
                         </div>
 
-                        <!-- Interactive Text Pressure Headline (Pure White Variable Font, No Color Shifting) -->
-                        <div class="space-y-2 select-none cursor-default max-w-2xl py-1" id="hero-text-pressure-wrapper">
-                            <div id="tp-hero-line1" class="text-pressure-container" data-text="PREDICT CAMPUS" data-flex="true" data-radius="0.5" data-color="#ffffff" data-pressure-color="#ffffff" data-min-font-size="36"></div>
-                            <div id="tp-hero-line2" class="text-pressure-container" data-text="PLACEMENTS" data-flex="true" data-radius="0.5" data-color="#ffffff" data-pressure-color="#ffffff" data-min-font-size="48"></div>
-                            <div class="flex items-center gap-2 text-[10px] font-mono text-slate-400 pt-1 tracking-wider">
-                                <i class="fa-solid fa-arrows-to-dot text-slate-400 animate-pulse"></i>
-                                <span>INTERACTIVE TEXT PRESSURE • HOVER TO WARP WEIGHT & WIDTH • CLICK TO RIPPLE</span>
-                            </div>
+                        <!-- Clean, Modern Editorial Typography Headline -->
+                        <div class="space-y-1 select-none max-w-2xl py-1">
+                            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white uppercase font-sans leading-[1.05]">
+                                PREDICT CAMPUS<br>
+                                <span class="bg-gradient-to-r from-white via-slate-100 to-[#ff6600] bg-clip-text text-transparent">PLACEMENTS</span>
+                            </h1>
                         </div>
 
                         <!-- Clean Divider Line with Year -->
-                        <div class="accent-divider">
+                        <div class="accent-divider mt-2">
                             <span class="year-pill">NIT JAMSHEDPUR 2026</span>
                         </div>
 
@@ -354,15 +352,31 @@
 
                     <!-- Right: Floating Mars Globe & Simple Telemetry Card -->
                     <div class="lg:col-span-4 flex justify-center lg:justify-end">
-                        <div class="space-card p-6 w-full max-w-sm space-y-5 relative overflow-hidden border border-white/15">
+                        <div class="space-card p-6 w-full max-w-sm space-y-5 relative overflow-hidden border border-white/15 backdrop-blur-xl bg-black/60 shadow-2xl">
                             
-                            <!-- Mars Globe -->
+                            <!-- Pure SVG & CSS 3D Holographic Mars Orb (Zero Broken Assets, Always Renders) -->
                             <div class="flex flex-col items-center text-center">
                                 <div class="relative w-44 h-44 flex items-center justify-center">
-                                    <div class="absolute inset-0 rounded-full bg-[#ff6600]/20 blur-2xl"></div>
-                                    <img src="/static/img/mars_orb.png" alt="Mars Planetary Globe" class="w-40 h-40 object-contain mars-orb-float relative z-10 drop-shadow-[0_0_30px_rgba(255,102,0,0.4)]">
+                                    <!-- Ambient Orange & Atmospheric Glow -->
+                                    <div class="absolute inset-0 rounded-full bg-[#ff6600]/25 blur-3xl animate-pulse"></div>
+                                    <div class="absolute w-36 h-36 rounded-full bg-gradient-to-tr from-amber-600/30 via-[#ff6600]/40 to-transparent blur-xl"></div>
+                                    
+                                    <!-- Celestial Orbital Rings -->
+                                    <div class="absolute w-44 h-44 rounded-full border border-[#ff6600]/20 animate-spin" style="animation-duration: 25s; border-style: dashed;"></div>
+                                    <div class="absolute w-40 h-40 rounded-full border border-white/10"></div>
+                                    
+                                    <!-- Pure Vector Mars Sphere -->
+                                    <div class="w-32 h-32 rounded-full relative z-10 shadow-[inset_-12px_-12px_24px_rgba(0,0,0,0.85),inset_6px_6px_16px_rgba(255,180,120,0.6),0_0_35px_rgba(255,102,0,0.45)] overflow-hidden flex items-center justify-center border border-[#ff7711]/40" style="background: radial-gradient(circle at 35% 35%, #ff8833 0%, #d84400 45%, #881a00 80%, #3a0800 100%);">
+                                        <!-- Atmospheric Planetary Surface Shading -->
+                                        <div class="absolute inset-0 opacity-40 mix-blend-overlay bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-200 via-rose-900 to-black"></div>
+                                        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"></div>
+                                        <div class="relative z-20 flex flex-col items-center">
+                                            <i class="fa-solid fa-satellite-dish text-[#ffb480] text-xl drop-shadow-[0_0_8px_#ff6600]"></i>
+                                            <span class="text-[9px] font-mono tracking-widest text-amber-200 uppercase mt-1 font-bold">ORBIT-1</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="text-[11px] font-mono tracking-wider text-[#ff6600] uppercase mt-2">BENCHMARK OVERVIEW</span>
+                                <span class="text-[11px] font-mono tracking-wider text-[#ff6600] uppercase mt-3">BENCHMARK OVERVIEW</span>
                                 <h3 class="font-bold text-base text-white mt-0.5">CAMPUS SALARY DATASET</h3>
                             </div>
 
