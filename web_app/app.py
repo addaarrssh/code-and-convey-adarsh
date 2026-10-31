@@ -81,7 +81,7 @@ if not os.path.exists(GROUND_TRUTH_FILE):
     usage = np.array(["Public"] * 50000 + ["Private"] * 50000)
     np.random.seed(1337)
     np.random.shuffle(usage)
-    df_gen = pd.DataFrame({"candidate_id": candidate_ids, "target_offered_ctc": packages, "split": usage})
+    df_gen = pd.DataFrame({"candidate_id": candidate_ids, "target_offered_ctc": packages, "Usage": usage})
     df_gen.to_csv(GROUND_TRUTH_FILE, index=False)
     print("✓ Created cloud runtime ground truth.")
 
