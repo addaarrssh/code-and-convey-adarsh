@@ -286,11 +286,14 @@ def submit_predictions():
 
 @app.route("/api/leaderboard")
 def get_leaderboard():
+    admin_pin = request.headers.get("X-Admin-PIN", "").strip() or request.args.get("admin_pin", "").strip()
+    is_admin_viewer = (admin_pin == ADMIN_PIN)
+
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("SELECT value FROM meta WHERE key = 'is_private_revealed'")
         row = cur.fetchone()
-        is_private = (row[0] == 'true') if row else False
+        is_global_revealed = (row[0] == 'true') if row else False
 
         # Aggregate top score per team
         cur.execute("""
@@ -308,31 +311,43 @@ def get_leaderboard():
         """)
         rows = cur.fetchall()
 
+    show_private = is_admin_viewer or is_global_revealed
+
     leaderboard = []
     for r in rows:
         email = r["team_email"]
         masked_email = (email[:3] + "***@" + email.split("@")[-1]) if "@" in email else "***"
-        leaderboard.append({
+        item = {
             "team_name": r["team_name"],
             "team_email": masked_email,
-            "best_public_r2": round(r["best_public_r2"], 4),
-            "best_public_rmse": round(r["best_public_rmse"], 4),
-            "best_private_r2": round(r["best_private_r2"], 4),
-            "best_private_rmse": round(r["best_private_rmse"], 4),
+            "best_public_r2": round(r["best_public_r2"], 4) if r["best_public_r2"] is not None else None,
+            "best_public_rmse": round(r["best_public_rmse"], 4) if r["best_public_rmse"] is not None else None,
             "total_submissions": r["total_submissions"],
             "last_active": r["last_active"]
-        })
+        }
 
-    if is_private:
-        leaderboard.sort(key=lambda x: x["best_private_r2"], reverse=True)
+        # Security shield: only transmit private scores to authenticated admin or on global release
+        if show_private:
+            item["best_private_r2"] = round(r["best_private_r2"], 4) if r["best_private_r2"] is not None else None
+            item["best_private_rmse"] = round(r["best_private_rmse"], 4) if r["best_private_rmse"] is not None else None
+        else:
+            item["best_private_r2"] = None
+            item["best_private_rmse"] = None
+
+        leaderboard.append(item)
+
+    if show_private:
+        leaderboard.sort(key=lambda x: x["best_private_r2"] if x["best_private_r2"] is not None else -999, reverse=True)
     else:
-        leaderboard.sort(key=lambda x: x["best_public_r2"], reverse=True)
+        leaderboard.sort(key=lambda x: x["best_public_r2"] if x["best_public_r2"] is not None else -999, reverse=True)
 
     for i, row in enumerate(leaderboard):
         row["rank"] = i + 1
 
     return jsonify({
-        "is_private_revealed": is_private,
+        "is_private_revealed": show_private,
+        "is_admin_viewer": is_admin_viewer,
+        "is_global_revealed": is_global_revealed,
         "leaderboard": leaderboard,
         "total_teams": len(leaderboard)
     })
@@ -346,19 +361,27 @@ def toggle_private():
     if pin != ADMIN_PIN:
         return jsonify({"success": False, "error": "Security clearance denied: Invalid Admin PIN."}), 403
 
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT value FROM meta WHERE key = 'is_private_revealed'")
-        row = cur.fetchone()
-        current_state = (row[0] == 'true') if row else False
-        new_state = not current_state
-        conn.execute("UPDATE meta SET value = ? WHERE key = 'is_private_revealed'", ('true' if new_state else 'false',))
-        conn.commit()
+    action = req.get("action", "session_unlock")
+    if action == "global_toggle":
+        with get_db() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT value FROM meta WHERE key = 'is_private_revealed'")
+            row = cur.fetchone()
+            current_state = (row[0] == 'true') if row else False
+            new_state = not current_state
+            conn.execute("UPDATE meta SET value = ? WHERE key = 'is_private_revealed'", ('true' if new_state else 'false',))
+            conn.commit()
+
+        return jsonify({
+            "success": True,
+            "is_global_revealed": new_state,
+            "message": "Global public state switched to: " + ("FINAL PRIVATE STANDINGS (Publicly Revealed)" if new_state else "PUBLIC SPRINT (Private Scores Sealed)")
+        })
 
     return jsonify({
         "success": True,
-        "is_private_revealed": new_state,
-        "message": "Benchmark mode switched to: " + ("FINAL PRIVATE STANDINGS (50,000 Rows)" if new_state else "PUBLIC SPRINT (50,000 Rows)")
+        "is_admin_viewer": True,
+        "message": "Organizer Audit Mode Unlocked. Private scores are visible ONLY on your browser (Hidden from Public)."
     })
 
 @app.route("/api/admin/export-archive", methods=["GET"])
