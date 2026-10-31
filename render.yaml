@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: code-and-convey
+    env: python
+    buildCommand: "pip install -r web_app/requirements.txt"
+    startCommand: "cd web_app && python3 app.py"
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: ADMIN_PIN
+        value: ACC2026
+    plan: free
