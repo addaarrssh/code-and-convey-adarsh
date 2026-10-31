@@ -75,7 +75,7 @@ if not os.path.exists(GROUND_TRUTH_FILE):
     os.makedirs(os.path.dirname(GROUND_TRUTH_FILE), exist_ok=True)
     np.random.seed(42)
     n = 100000
-    candidate_ids = [f"NITJ_2026_{i:06d}" for i in range(1, n + 1)]
+    candidate_ids = [f"NITJ_CC_{200000 + i}" for i in range(1, n + 1)]
     base = np.random.normal(12.5, 3.2, n)
     packages = np.clip(np.round(base, 2), 2.5, 65.0)
     usage = np.array(["Public"] * 50000 + ["Private"] * 50000)
@@ -356,9 +356,10 @@ def export_archive():
     )
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
     print("\n" + "="*65)
     print("🔒 CODE & CONVEY COMPETITION PORTAL (HARDENED PRODUCTION ENGINE)")
-    print("📍 URL: http://0.0.0.0:8080")
+    print(f"📍 URL: http://0.0.0.0:{port}")
     print(f"🔑 Secret Admin PIN: {ADMIN_PIN}")
     print("="*65 + "\n")
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
