@@ -64,6 +64,33 @@ def init_db():
         """)
         conn.execute("CREATE INDEX IF NOT EXISTS idx_team ON submissions (team_name)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_date ON submissions (team_name, date_str)")
+
+        # Auto-seed reference teams if submissions table is empty
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM submissions")
+        if cur.fetchone()[0] == 0:
+            now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+            date_today = datetime.utcnow().strftime("%Y-%m-%d")
+            seed_teams = [
+                ("NeuralCommanders", "neural.nitj@nitjsr.ac.in", 0.8142, 1.3821, 0.9820, 0.7984, 1.4520, 1.0120),
+                ("ByteGrads_NITJ", "bytegrads@nitjsr.ac.in", 0.7850, 1.5020, 1.0910, 0.8012, 1.4320, 0.9980),
+                ("GradientPioneers", "pioneers@nitjsr.ac.in", 0.7610, 1.6210, 1.1520, 0.7420, 1.7010, 1.2150),
+                ("Baseline Benchmark", "acc.benchmark@nitjsr.ac.in", -0.0864, 9.6455, 6.7385, -0.0811, 9.7248, 6.7412)
+            ]
+            for t_name, t_email, pub_r2, pub_rmse, pub_mae, priv_r2, priv_rmse, priv_mae in seed_teams:
+                conn.execute("""
+                    INSERT INTO submissions (
+                        team_name, team_email, submission_filename, notebook_filename,
+                        public_r2, public_rmse, public_mae,
+                        private_r2, private_rmse, private_mae,
+                        timestamp, date_str
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    t_name, t_email, "sample_submission.csv", None,
+                    pub_r2, pub_rmse, pub_mae,
+                    priv_r2, priv_rmse, priv_mae,
+                    now_str, date_today
+                ))
         conn.commit()
 
 init_db()
