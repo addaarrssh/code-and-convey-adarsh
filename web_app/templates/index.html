@@ -436,6 +436,17 @@
                         </div>
                     </div>
 
+                    <!-- Organizer Session Banner (Visible ONLY when admin pin unlocked in current session) -->
+                    <div id="banner-organizer-mode" class="hidden mt-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 items-center justify-between text-xs text-amber-300 font-sans shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                            <span><strong>ORGANIZER AUDIT ACTIVE:</strong> Confidential <span class="font-mono text-amber-200 underline font-bold">PRIVATE R²</span> column unlocked. Visible <strong>ONLY</strong> in this session. Public participants see strictly the 50k public benchmark.</span>
+                        </div>
+                        <button onclick="logoutAdmin()" class="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg text-xs font-mono font-bold text-amber-200 transition flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-lock text-[10px]"></i> Lock Private View
+                        </button>
+                    </div>
+
                     <!-- Leaderboard Table Container -->
                     <div class="overflow-x-auto mt-4">
                         <table class="w-full text-left font-sans text-xs border-collapse">
@@ -443,7 +454,10 @@
                                 <tr class="text-slate-400 border-b border-white/10 text-[11px] font-mono uppercase tracking-wider">
                                     <th class="py-3.5 px-3 sortable-th" onclick="sortLeaderboard('rank')">RANK <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
                                     <th class="py-3.5 px-3 sortable-th" onclick="sortLeaderboard('team')">TEAM NAME <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
-                                    <th class="py-3.5 px-3 sortable-th text-right font-bold text-[#ff6600]" onclick="sortLeaderboard('r2')">R² SCORE (ACCURACY) <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
+                                    <th class="py-3.5 px-3 sortable-th text-right font-bold text-[#ff6600]" onclick="sortLeaderboard('public_r2')">PUBLIC R² (50k) <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
+                                    <th id="th-private-r2" class="hidden py-3.5 px-3 sortable-th text-right font-bold text-amber-300 bg-amber-500/10 border-x border-amber-500/25" onclick="sortLeaderboard('private_r2')">
+                                        <i class="fa-solid fa-lock text-[10px] mr-1 text-amber-400"></i> PRIVATE R² (AUDIT) <i class="fa-solid fa-sort text-[9px] ml-1"></i>
+                                    </th>
                                     <th class="py-3.5 px-3 sortable-th text-right font-mono" onclick="sortLeaderboard('rmse')">AVG ERROR (₹ LPA) <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
                                     <th class="py-3.5 px-3 sortable-th text-center font-mono" onclick="sortLeaderboard('submissions')">SUBMISSIONS <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
                                     <th class="py-3.5 px-3 text-right font-mono">LAST SUBMITTED</th>
@@ -451,7 +465,7 @@
                             </thead>
                             <tbody id="tbody-leaderboard" class="divide-y divide-white/5">
                                 <tr>
-                                    <td colspan="6" class="py-12 text-center text-slate-500 font-sans text-xs">
+                                    <td colspan="6" id="td-empty-leaderboard" class="py-12 text-center text-slate-500 font-sans text-xs">
                                         <i class="fa-solid fa-spinner fa-spin text-lg text-[#ff6600] mb-2"></i>
                                         <p>Loading live leaderboard scores...</p>
                                     </td>
@@ -768,11 +782,11 @@
             </div>
 
             <p class="text-xs text-slate-400 font-sans">
-                Enter the Admin PIN to switch between Public (50,000) and Private (100,000) leaderboard scores.
+                Enter your Organizer Secret PIN to reveal the confidential <span class="text-amber-300 font-bold">Private Score</span> column in your active browser session.
             </p>
 
             <div class="space-y-1.5">
-                <input type="password" id="input-admin-pin" placeholder="Enter Organizer Secret PIN" class="w-full px-3.5 py-2.5 bg-black border border-white/15 rounded-xl text-xs font-mono text-white text-center tracking-widest focus:outline-none focus:border-[#ff6600]">
+                <input type="password" id="input-admin-pin" onkeydown="if(event.key === 'Enter') executeAdminToggle()" placeholder="Enter Organizer Secret PIN" class="w-full px-3.5 py-2.5 bg-black border border-white/15 rounded-xl text-xs font-mono text-white text-center tracking-widest focus:outline-none focus:border-[#ff6600]">
             </div>
 
             <div class="flex gap-2">
@@ -794,8 +808,8 @@
            CLIENT STATE, MULTI-COLUMN SORTING & TELEMETRY ENGINE
            ========================================================================= */
         let cachedLeaderboard = [];
-        let currentLeaderboardState = { is_private_revealed: false };
-        let currentSortColumn = 'r2';
+        let currentLeaderboardState = { is_private_revealed: false, is_admin_viewer: false };
+        let currentSortColumn = 'public_r2';
         let sortDirection = 'desc';
 
         function switchTab(viewId) {
@@ -838,16 +852,34 @@
                 }
 
                 if (cachedLeaderboard.length > 0) {
-                    const topR2 = cachedLeaderboard[0].public_r2 ?? cachedLeaderboard[0].best_public_r2 ?? cachedLeaderboard[0].r2;
-                    if (topR2 !== undefined && document.getElementById('telemetry-lead-r2')) {
+                    const topR2 = cachedLeaderboard[0].best_public_r2 ?? cachedLeaderboard[0].public_r2;
+                    if (topR2 !== undefined && topR2 !== null && document.getElementById('telemetry-lead-r2')) {
                         document.getElementById('telemetry-lead-r2').textContent = Number(topR2).toFixed(4);
                     }
                 }
 
+                const isAdmin = Boolean(data.is_admin_viewer);
+                const thPrivate = document.getElementById('th-private-r2');
+                const bannerOrg = document.getElementById('banner-organizer-mode');
+
+                if (isAdmin) {
+                    if (thPrivate) thPrivate.classList.remove('hidden');
+                    if (bannerOrg) {
+                        bannerOrg.classList.remove('hidden');
+                        bannerOrg.classList.add('flex');
+                    }
+                } else {
+                    if (thPrivate) thPrivate.classList.add('hidden');
+                    if (bannerOrg) {
+                        bannerOrg.classList.add('hidden');
+                        bannerOrg.classList.remove('flex');
+                    }
+                }
+
                 const badge = document.getElementById('badge-benchmark-type');
-                if (data.is_admin_viewer) {
+                if (isAdmin) {
                     badge.className = "px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 border border-amber-500/50 text-amber-300 flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.25)]";
-                    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> 🔒 ORGANIZER AUDIT MODE (PRIVATE SCORES • VISIBLE ONLY TO YOU)`;
+                    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> 🔒 ORGANIZER AUDIT MODE (PRIVATE COLUMN UNLOCKED)`;
                 } else if (data.is_global_revealed) {
                     badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center gap-1.5";
                     badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> FINAL PRIVATE STANDINGS (100,000 ROWS)`;
@@ -856,7 +888,7 @@
                     badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> PUBLIC BENCHMARK (50,000 ROWS)`;
                 }
 
-                updateAdminNavButtons(data.is_admin_viewer);
+                updateAdminNavButtons(isAdmin);
                 renderLeaderboardTable();
             } catch (err) {
                 console.error("Leaderboard sync failure:", err);
@@ -873,10 +905,10 @@
                     btnNav.className = "px-3.5 py-2 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/50 rounded-xl text-xs font-bold text-amber-300 hover:text-white transition flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.25)]";
                 }
                 if (labelNav) {
-                    labelNav.textContent = "Lock Admin View";
+                    labelNav.textContent = "Lock Private View";
                 }
                 if (btnTop) {
-                    btnTop.innerHTML = `<i class="fa-solid fa-lock-open text-[10px] text-amber-400"></i> <span class="text-amber-300">ADMIN ACTIVE (LOCK)</span>`;
+                    btnTop.innerHTML = `<i class="fa-solid fa-lock-open text-[10px] text-amber-400"></i> <span class="text-amber-300 font-bold">ORGANIZER ACTIVE (LOCK)</span>`;
                 }
             } else {
                 if (btnNav) {
@@ -901,7 +933,8 @@
 
         function logoutAdmin() {
             sessionStorage.removeItem('cc_admin_pin');
-            alert('Admin view locked. Reset to Public Leaderboard.');
+            alert('Organizer audit mode locked. Returned to Public Benchmark.');
+            currentSortColumn = 'public_r2';
             fetchLeaderboardData();
         }
 
@@ -922,6 +955,24 @@
         function renderLeaderboardTable() {
             const tbody = document.getElementById('tbody-leaderboard');
             const searchVal = (document.getElementById('input-search-leaderboard').value || '').toLowerCase().trim();
+            const isAdmin = Boolean(currentLeaderboardState && currentLeaderboardState.is_admin_viewer);
+
+            const thPrivate = document.getElementById('th-private-r2');
+            const bannerOrg = document.getElementById('banner-organizer-mode');
+
+            if (isAdmin) {
+                if (thPrivate) thPrivate.classList.remove('hidden');
+                if (bannerOrg) {
+                    bannerOrg.classList.remove('hidden');
+                    bannerOrg.classList.add('flex');
+                }
+            } else {
+                if (thPrivate) thPrivate.classList.add('hidden');
+                if (bannerOrg) {
+                    bannerOrg.classList.add('hidden');
+                    bannerOrg.classList.remove('flex');
+                }
+            }
 
             let rows = [...cachedLeaderboard];
 
@@ -931,7 +982,6 @@
 
             rows.sort((a, b) => {
                 let vA, vB;
-                const isPriv = currentLeaderboardState.is_private_revealed;
 
                 if (currentSortColumn === 'rank') {
                     vA = Number(a.rank) || 9999;
@@ -939,15 +989,18 @@
                 } else if (currentSortColumn === 'team') {
                     vA = (a.team_name || '').toLowerCase();
                     vB = (b.team_name || '').toLowerCase();
-                } else if (currentSortColumn === 'r2') {
-                    vA = isPriv ? (a.private_r2 ?? a.best_private_r2 ?? -999) : (a.public_r2 ?? a.best_public_r2 ?? a.r2 ?? -999);
-                    vB = isPriv ? (b.private_r2 ?? b.best_private_r2 ?? -999) : (b.public_r2 ?? b.best_public_r2 ?? b.r2 ?? -999);
+                } else if (currentSortColumn === 'r2' || currentSortColumn === 'public_r2') {
+                    vA = a.best_public_r2 ?? a.public_r2 ?? -999;
+                    vB = b.best_public_r2 ?? b.public_r2 ?? -999;
+                } else if (currentSortColumn === 'private_r2') {
+                    vA = a.best_private_r2 ?? a.private_r2 ?? -999;
+                    vB = b.best_private_r2 ?? b.private_r2 ?? -999;
                 } else if (currentSortColumn === 'rmse') {
-                    vA = isPriv ? (a.private_rmse ?? a.best_private_rmse ?? 9999) : (a.public_rmse ?? a.best_public_rmse ?? a.rmse ?? 9999);
-                    vB = isPriv ? (b.private_rmse ?? b.best_private_rmse ?? 9999) : (b.public_rmse ?? b.best_public_rmse ?? b.rmse ?? 9999);
+                    vA = a.best_public_rmse ?? a.public_rmse ?? 9999;
+                    vB = b.best_public_rmse ?? b.public_rmse ?? 9999;
                 } else if (currentSortColumn === 'submissions') {
-                    vA = Number(a.submissions_count || a.submission_count || a.total_submissions || 0);
-                    vB = Number(b.submissions_count || b.submission_count || b.total_submissions || 0);
+                    vA = Number(a.total_submissions || a.submissions_count || 0);
+                    vB = Number(b.total_submissions || b.submissions_count || 0);
                 }
 
                 if (vA < vB) return sortDirection === 'asc' ? -1 : 1;
@@ -955,10 +1008,12 @@
                 return 0;
             });
 
+            const colSpanCount = isAdmin ? 7 : 6;
+
             if (rows.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="py-12 text-center text-slate-500 font-sans text-xs">
+                        <td colspan="${colSpanCount}" class="py-12 text-center text-slate-500 font-sans text-xs">
                             <i class="fa-solid fa-satellite-dish text-2xl text-slate-600 mb-2"></i>
                             <p>No validated submissions found matching criteria.</p>
                         </td>
@@ -975,13 +1030,21 @@
                 else if (rank === 2) rankBadge = `<span class="px-2 py-0.5 rounded bg-slate-400/20 text-slate-200 border border-slate-400/40 font-bold font-mono">#2 🥈</span>`;
                 else if (rank === 3) rankBadge = `<span class="px-2 py-0.5 rounded bg-orange-700/20 text-orange-400 border border-orange-700/40 font-bold font-mono">#3 🥉</span>`;
 
-                const isPriv = currentLeaderboardState.is_private_revealed;
-                const r2Raw = isPriv ? (item.private_r2 ?? item.best_private_r2) : (item.public_r2 ?? item.best_public_r2 ?? item.r2);
-                const rmseRaw = isPriv ? (item.private_rmse ?? item.best_private_rmse) : (item.public_rmse ?? item.best_public_rmse ?? item.rmse);
+                const pubR2Raw = item.best_public_r2 ?? item.public_r2;
+                const pubR2Val = pubR2Raw !== undefined && pubR2Raw !== null ? Number(pubR2Raw).toFixed(4) : '—';
 
-                const r2Val = r2Raw !== undefined && r2Raw !== null ? Number(r2Raw).toFixed(4) : '—';
+                const privR2Raw = item.best_private_r2 ?? item.private_r2;
+                const privR2Val = privR2Raw !== undefined && privR2Raw !== null ? Number(privR2Raw).toFixed(4) : '—';
+
+                const rmseRaw = item.best_public_rmse ?? item.public_rmse;
                 const rmseVal = rmseRaw !== undefined && rmseRaw !== null ? Number(rmseRaw).toFixed(4) : '—';
-                const subCount = item.submissions_count || item.submission_count || item.total_submissions || 1;
+                const subCount = item.total_submissions || item.submissions_count || 1;
+
+                const privateTd = isAdmin ? `
+                    <td class="py-3 px-3 text-right font-bold text-amber-300 bg-amber-500/10 border-x border-amber-500/20 font-mono text-sm tracking-wide">
+                        ${privR2Val}
+                    </td>
+                ` : '';
 
                 html += `
                     <tr class="hover:bg-white/[0.04] transition group">
@@ -990,11 +1053,12 @@
                             <span>${escapeStr(item.team_name)}</span>
                             ${rank <= 3 ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-[#ff6600]/20 text-[#ff6600] border border-[#ff6600]/30 font-semibold">QUALIFIED</span>' : ''}
                         </td>
-                        <td class="py-3 px-3 text-right font-bold text-[#ff6600] font-mono text-sm">${r2Val}</td>
+                        <td class="py-3 px-3 text-right font-bold text-[#ff6600] font-mono text-sm">${pubR2Val}</td>
+                        ${privateTd}
                         <td class="py-3 px-3 text-right text-slate-300 font-mono">${rmseVal}</td>
                         <td class="py-3 px-3 text-center text-slate-400 font-mono">${subCount}</td>
                         <td class="py-3 px-3 text-right text-[10px] text-slate-500 font-mono">
-                            ${escapeStr(item.timestamp || item.last_submitted || '—')}
+                            ${escapeStr(item.last_active || item.timestamp || item.last_submitted || '—')}
                         </td>
                     </tr>
                 `;
@@ -1158,7 +1222,9 @@
                 if (result.success) {
                     sessionStorage.setItem('cc_admin_pin', pin);
                     closeAdminModal();
-                    alert('Organizer Audit Mode Unlocked!\n\nPrivate rankings are now visible ONLY on this browser tab.\n\nAll other users and public participants will still see ONLY the public leaderboard.');
+                    currentSortColumn = 'private_r2';
+                    sortDirection = 'desc';
+                    alert('Organizer Private Column Unlocked!\n\nThe confidential Private R² (Audit) column is now visible in the leaderboard table for your current session.\n\nAll public participants continue to see only the public 50k benchmark.');
                     fetchLeaderboardData();
                 } else {
                     alert(result.error || 'Incorrect PIN: Access Denied.');
