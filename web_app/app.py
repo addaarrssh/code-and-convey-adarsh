@@ -65,8 +65,39 @@ def init_db():
         conn.execute("CREATE INDEX IF NOT EXISTS idx_team ON submissions (team_name)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_date ON submissions (team_name, date_str)")
 
-        # Auto-seed reference teams if submissions table is empty
+        # Create registered teams table for team leader roll number authentication
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS registered_teams (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                team_name TEXT NOT NULL UNIQUE,
+                leader_name TEXT NOT NULL,
+                leader_email TEXT NOT NULL,
+                leader_roll_no TEXT NOT NULL,
+                is_active INTEGER NOT NULL DEFAULT 1
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_reg_team ON registered_teams (team_name)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_reg_roll ON registered_teams (leader_roll_no)")
+
+        # Auto-seed reference teams in registered_teams if empty
         cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM registered_teams")
+        if cur.fetchone()[0] == 0:
+            seed_registered = [
+                ("NeuralCommanders", "Neural Commander Leader", "neural.nitj@nitjsr.ac.in", "2024ugcs001", 1),
+                ("ByteGrads_NITJ", "ByteGrads Leader", "bytegrads@nitjsr.ac.in", "2024ugcs042", 1),
+                ("GradientPioneers", "Gradient Pioneers Leader", "pioneers@nitjsr.ac.in", "2024ugpi059", 1),
+                ("Baseline Benchmark", "Benchmark Administrator", "acc.benchmark@nitjsr.ac.in", "2024ugme099", 1),
+                ("LocalTest", "Local Tester", "test@nitjsr.ac.in", "2024ugpi000", 1)
+            ]
+            for t_name, l_name, l_email, l_roll, is_act in seed_registered:
+                conn.execute("""
+                    INSERT OR IGNORE INTO registered_teams (
+                        team_name, leader_name, leader_email, leader_roll_no, is_active
+                    ) VALUES (?, ?, ?, ?, ?)
+                """, (t_name, l_name, l_email, l_roll, is_act))
+
+        # Auto-seed reference teams if submissions table is empty
         cur.execute("SELECT COUNT(*) FROM submissions")
         if cur.fetchone()[0] == 0:
             now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -188,12 +219,34 @@ def download_file(filename):
 def submit_predictions():
     team_name = request.form.get("team_name", "").strip()
     team_email = (request.form.get("team_email") or request.form.get("email") or "").strip()
+    leader_roll_no = (request.form.get("leader_roll_no") or request.form.get("roll_no") or "").strip()
     
     if not team_name or not team_email:
         return jsonify({"success": False, "error": "Team Identifier and Student Email are required."}), 400
         
-    if len(team_name) > 60 or len(team_email) > 100:
+    if len(team_name) > 60 or len(team_email) > 100 or len(leader_roll_no) > 50:
         return jsonify({"success": False, "error": "Input length exceeds allowed boundaries."}), 400
+
+    # Team Leader Roll Number Authentication Check
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT id, is_active 
+            FROM registered_teams 
+            WHERE LOWER(TRIM(team_name)) = ? 
+              AND LOWER(TRIM(leader_email)) = ? 
+              AND LOWER(TRIM(leader_roll_no)) = ?
+            """,
+            (team_name.lower(), team_email.lower(), leader_roll_no.lower())
+        )
+        reg_team = cur.fetchone()
+
+    if not reg_team or not reg_team["is_active"]:
+        return jsonify({
+            "success": False,
+            "error": "Verification failed: Team Name, Leader Email, or Leader Roll Number does not match registered records."
+        }), 401
 
     if "submission_file" not in request.files:
         return jsonify({"success": False, "error": "No submission CSV payload detected."}), 400
@@ -322,23 +375,52 @@ def get_leaderboard():
         row = cur.fetchone()
         is_global_revealed = (row[0] == 'true') if row else False
 
-        # Aggregate top score per team
-        cur.execute("""
+        show_private = is_admin_viewer or is_global_revealed
+        order_by = "private_r2 DESC, private_rmse ASC, id DESC" if show_private else "public_r2 DESC, public_rmse ASC, id DESC"
+
+        # Fetch the exact single best submission per team (no decoupled metrics)
+        cur.execute(f"""
+            WITH team_stats AS (
+                SELECT 
+                    team_name,
+                    COUNT(*) as total_submissions,
+                    MAX(timestamp) as last_active
+                FROM submissions
+                GROUP BY team_name
+            ),
+            ranked_subs AS (
+                SELECT 
+                    team_name,
+                    team_email,
+                    public_r2,
+                    public_rmse,
+                    public_mae,
+                    private_r2,
+                    private_rmse,
+                    private_mae,
+                    timestamp,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY team_name 
+                        ORDER BY {order_by}
+                    ) as rn
+                FROM submissions
+            )
             SELECT 
-                team_name,
-                team_email,
-                MAX(public_r2) as best_public_r2,
-                MIN(public_rmse) as best_public_rmse,
-                MAX(private_r2) as best_private_r2,
-                MIN(private_rmse) as best_private_rmse,
-                COUNT(*) as total_submissions,
-                MAX(timestamp) as last_active
-            FROM submissions
-            GROUP BY team_name
+                r.team_name,
+                r.team_email,
+                r.public_r2 as best_public_r2,
+                r.public_rmse as best_public_rmse,
+                r.public_mae as best_public_mae,
+                r.private_r2 as best_private_r2,
+                r.private_rmse as best_private_rmse,
+                r.private_mae as best_private_mae,
+                s.total_submissions,
+                s.last_active
+            FROM ranked_subs r
+            JOIN team_stats s ON r.team_name = s.team_name
+            WHERE r.rn = 1
         """)
         rows = cur.fetchall()
-
-    show_private = is_admin_viewer or is_global_revealed
 
     leaderboard = []
     for r in rows:
@@ -349,6 +431,7 @@ def get_leaderboard():
             "team_email": masked_email,
             "best_public_r2": round(r["best_public_r2"], 4) if r["best_public_r2"] is not None else None,
             "best_public_rmse": round(r["best_public_rmse"], 4) if r["best_public_rmse"] is not None else None,
+            "best_public_mae": round(r["best_public_mae"], 4) if r["best_public_mae"] is not None else None,
             "total_submissions": r["total_submissions"],
             "last_active": r["last_active"]
         }
@@ -357,16 +440,24 @@ def get_leaderboard():
         if show_private:
             item["best_private_r2"] = round(r["best_private_r2"], 4) if r["best_private_r2"] is not None else None
             item["best_private_rmse"] = round(r["best_private_rmse"], 4) if r["best_private_rmse"] is not None else None
+            item["best_private_mae"] = round(r["best_private_mae"], 4) if r["best_private_mae"] is not None else None
         else:
             item["best_private_r2"] = None
             item["best_private_rmse"] = None
+            item["best_private_mae"] = None
 
         leaderboard.append(item)
 
     if show_private:
-        leaderboard.sort(key=lambda x: x["best_private_r2"] if x["best_private_r2"] is not None else -999, reverse=True)
+        leaderboard.sort(key=lambda x: (
+            x["best_private_r2"] if x["best_private_r2"] is not None else -999,
+            -(x["best_private_rmse"] if x["best_private_rmse"] is not None else 999)
+        ), reverse=True)
     else:
-        leaderboard.sort(key=lambda x: x["best_public_r2"] if x["best_public_r2"] is not None else -999, reverse=True)
+        leaderboard.sort(key=lambda x: (
+            x["best_public_r2"] if x["best_public_r2"] is not None else -999,
+            -(x["best_public_rmse"] if x["best_public_rmse"] is not None else 999)
+        ), reverse=True)
 
     for i, row in enumerate(leaderboard):
         row["rank"] = i + 1
