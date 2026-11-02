@@ -513,11 +513,11 @@
                         <!-- Submission Alert Banner -->
                         <div id="box-submit-alert" class="hidden"></div>
 
-                        <!-- Team Authentication Guidance Note -->
-                        <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs font-sans flex items-start gap-2.5">
-                            <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
+                        <!-- Direct Submission Guidance Note -->
+                        <div class="p-3.5 rounded-xl bg-[#ff6600]/10 border border-[#ff6600]/25 text-orange-200 text-xs font-sans flex items-start gap-2.5">
+                            <i class="fa-solid fa-bolt text-[#ff6600] mt-0.5"></i>
                             <div>
-                                <strong>Registered Team Authentication:</strong> Submissions are validated against official NIT Jamshedpur registered teams. Enter the exact <strong>Team Name</strong>, <strong>Leader Email</strong>, and <strong>Leader Roll Number</strong> used during registration. Need to register your team or verify your roll number? Contact ACC coordinators at <code class="text-blue-200">acc@nitjsr.ac.in</code>.
+                                <strong>Direct Live Evaluation Active:</strong> Submissions are processed immediately upon upload. Enter your <strong>Team Name</strong> and <strong>Leader / Contact Email</strong> below. Pre-registration verification is currently bypassed—your predictions CSV will be scored directly and posted to the live leaderboard.
                             </div>
                         </div>
 
@@ -533,8 +533,8 @@
                                     <input type="email" id="field-team-email" required placeholder="pioneers@nitjsr.ac.in" class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition">
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label for="field-leader-roll-no" class="block text-xs font-medium text-slate-300">LEADER ROLL NUMBER *</label>
-                                    <input type="text" id="field-leader-roll-no" required placeholder="e.g. 2024ugpi059" class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition">
+                                    <label for="field-leader-roll-no" class="block text-xs font-medium text-slate-300">LEADER ROLL NUMBER (OPTIONAL)</label>
+                                    <input type="text" id="field-leader-roll-no" placeholder="e.g. 2024ugpi059" class="w-full px-3.5 py-2.5 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition">
                                 </div>
                             </div>
 
@@ -1147,7 +1147,10 @@
             const formData = new FormData();
             formData.append('team_name', document.getElementById('field-team-name').value.trim());
             formData.append('email', document.getElementById('field-team-email').value.trim());
-            formData.append('leader_roll_no', document.getElementById('field-leader-roll-no').value.trim());
+            const rollInput = document.getElementById('field-leader-roll-no');
+            if (rollInput && rollInput.value.trim()) {
+                formData.append('leader_roll_no', rollInput.value.trim());
+            }
             formData.append('submission_file', document.getElementById('field-file-csv').files[0]);
 
             const nb = document.getElementById('field-file-nb').files[0];

@@ -125,64 +125,38 @@ def test_auth_case_and_whitespace_insensitivity(client):
     assert resp.status_code == 400
     assert "No submission CSV payload detected" in resp.get_json().get("error", "")
 
-def test_auth_wrong_roll_number(client):
-    """Verify that wrong leader roll number returns 401."""
+def test_direct_submission_bypasses_registration_check(client):
+    """Verify that unverified roll numbers or unregistered teams are no longer rejected with 401."""
     data = {
         "team_name": "GradientPioneers",
         "team_email": "pioneers@nitjsr.ac.in",
-        "leader_roll_no": "2024ugcs999"  # Incorrect roll number
+        "leader_roll_no": "2024ugcs999"  # Arbitrary roll number
     }
     resp = client.post("/api/submit", data=data)
-    assert resp.status_code == 401
-    res = resp.get_json()
-    assert res.get("success") is False
-    assert "Verification failed: Team Name, Leader Email, or Leader Roll Number does not match registered records." in res.get("error", "")
+    # Passes authentication directly without 401, proceeds to CSV check (400 for missing payload)
+    assert resp.status_code == 400
+    assert "No submission CSV payload detected" in resp.get_json().get("error", "")
 
-def test_auth_missing_roll_number(client):
-    """Verify that missing leader roll number returns 401."""
+def test_direct_submission_without_registration(client):
+    """Verify that any team can submit directly without pre-registration."""
     data = {
-        "team_name": "GradientPioneers",
-        "team_email": "pioneers@nitjsr.ac.in",
-        "leader_roll_no": ""
+        "team_name": "DirectSubmitTeam",
+        "team_email": "direct@nitjsr.ac.in"
     }
     resp = client.post("/api/submit", data=data)
-    assert resp.status_code == 401
-    assert "Verification failed: Team Name, Leader Email, or Leader Roll Number does not match registered records." in resp.get_json().get("error", "")
+    # Verification is bypassed: should proceed directly to payload check (400 for missing file)
+    assert resp.status_code == 400
+    assert "No submission CSV payload detected" in resp.get_json().get("error", "")
 
-def test_auth_unregistered_team(client):
-    """Verify that an unregistered team returns 401."""
+def test_missing_team_identifier(client):
+    """Verify that missing team name returns 400."""
     data = {
-        "team_name": "UnregisteredRogueTeam",
-        "team_email": "rogue@nitjsr.ac.in",
-        "leader_roll_no": "2024ugpi059"
+        "team_name": "",
+        "team_email": "direct@nitjsr.ac.in"
     }
     resp = client.post("/api/submit", data=data)
-    assert resp.status_code == 401
-    assert "Verification failed: Team Name, Leader Email, or Leader Roll Number does not match registered records." in resp.get_json().get("error", "")
-
-def test_auth_inactive_team(client):
-    """Verify that an inactive team (is_active = 0) returns 401."""
-    inactive_team = "InactiveBannedTeam"
-    with get_db() as conn:
-        conn.execute("DELETE FROM registered_teams WHERE team_name = ?", (inactive_team,))
-        conn.execute("""
-            INSERT INTO registered_teams (team_name, leader_name, leader_email, leader_roll_no, is_active)
-            VALUES (?, ?, ?, ?, 0)
-        """, (inactive_team, "Banned Leader", "banned@nitjsr.ac.in", "2024ugxx001"))
-        conn.commit()
-
-    data = {
-        "team_name": inactive_team,
-        "team_email": "banned@nitjsr.ac.in",
-        "leader_roll_no": "2024ugxx001"
-    }
-    resp = client.post("/api/submit", data=data)
-    assert resp.status_code == 401
-    assert "Verification failed" in resp.get_json().get("error", "")
-
-    with get_db() as conn:
-        conn.execute("DELETE FROM registered_teams WHERE team_name = ?", (inactive_team,))
-        conn.commit()
+    assert resp.status_code == 400
+    assert "Team Identifier and Student Email are required" in resp.get_json().get("error", "")
 
 
 # =========================================================================

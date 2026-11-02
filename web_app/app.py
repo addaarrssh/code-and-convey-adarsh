@@ -227,29 +227,20 @@ def submit_predictions():
     if len(team_name) > 60 or len(team_email) > 100 or len(leader_roll_no) > 50:
         return jsonify({"success": False, "error": "Input length exceeds allowed boundaries."}), 400
 
-    # Team Leader Roll Number Authentication Check
+    # Direct Submission: Pre-registration verification disabled. Submissions go directly to evaluation.
+    canonical_team_name = team_name
+    canonical_leader_email = team_email
+
+    # Optionally use canonical casing if team happens to exist in registered_teams
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            """
-            SELECT id, team_name, leader_email, is_active 
-            FROM registered_teams 
-            WHERE LOWER(TRIM(team_name)) = ? 
-              AND LOWER(TRIM(leader_email)) = ? 
-              AND LOWER(TRIM(leader_roll_no)) = ?
-            """,
-            (team_name.lower(), team_email.lower(), leader_roll_no.lower())
+            "SELECT team_name, leader_email FROM registered_teams WHERE LOWER(TRIM(team_name)) = ?",
+            (team_name.lower(),)
         )
         reg_team = cur.fetchone()
-
-    if not reg_team or not reg_team["is_active"]:
-        return jsonify({
-            "success": False,
-            "error": "Verification failed: Team Name, Leader Email, or Leader Roll Number does not match registered records."
-        }), 401
-
-    canonical_team_name = reg_team["team_name"]
-    canonical_leader_email = reg_team["leader_email"]
+        if reg_team:
+            canonical_team_name = reg_team["team_name"]
 
     if "submission_file" not in request.files:
         return jsonify({"success": False, "error": "No submission CSV payload detected."}), 400
