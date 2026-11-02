@@ -383,11 +383,11 @@
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/5 border border-white/5">
                                     <div class="text-[10px] text-slate-400">BEST SCORE</div>
-                                    <div id="telemetry-lead-r2" class="text-[#ff6600] font-bold text-sm mt-0.5">-0.0006</div>
+                                    <div id="telemetry-lead-r2" class="text-[#ff6600] font-bold text-sm mt-0.5">0.8142</div>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/5 border border-white/5">
                                     <div class="text-[10px] text-slate-400">TEAMS JOINED</div>
-                                    <div id="telemetry-total-teams" class="text-cyan-400 font-bold text-sm mt-0.5">8</div>
+                                    <div id="telemetry-total-teams" class="text-cyan-400 font-bold text-sm mt-0.5">4</div>
                                 </div>
                             </div>
 
@@ -427,7 +427,7 @@
                         <div class="flex items-center gap-3">
                             <div class="relative">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                                <input type="text" id="input-search-leaderboard" onkeyup="filterLeaderboard()" placeholder="Search team..." aria-label="Search teams by name" class="pl-8 pr-3 py-2 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition w-44 sm:w-56">
+                                <input type="text" id="input-search-leaderboard" oninput="filterLeaderboard()" onkeyup="filterLeaderboard()" placeholder="Search team..." aria-label="Search teams by name" class="pl-8 pr-3 py-2 bg-black/60 border border-white/15 rounded-xl text-xs font-sans text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6600] transition w-44 sm:w-56">
                             </div>
                             <button onclick="fetchLeaderboardData()" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/15 rounded-xl text-xs font-medium text-slate-200 hover:text-white transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-rotate text-[10px]"></i>
@@ -460,7 +460,7 @@
                                     </th>
                                     <th class="py-3.5 px-3 sortable-th text-right font-mono" onclick="sortLeaderboard('rmse')">AVG ERROR (₹ LPA) <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
                                     <th class="py-3.5 px-3 sortable-th text-center font-mono" onclick="sortLeaderboard('submissions')">SUBMISSIONS <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
-                                    <th class="py-3.5 px-3 text-right font-mono">LAST SUBMITTED</th>
+                                    <th class="py-3.5 px-3 sortable-th text-right font-mono" onclick="sortLeaderboard('last_active')">LAST SUBMITTED <i class="fa-solid fa-sort text-[9px] ml-1"></i></th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-leaderboard" class="divide-y divide-white/5">
@@ -475,7 +475,7 @@
                     </div>
 
                     <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-slate-500">
-                        <div>Active Teams: <span id="telemetry-active-teams" class="text-slate-300 font-bold">8</span></div>
+                        <div>Active Teams: <span id="telemetry-active-teams" class="text-slate-300 font-bold">4</span></div>
                         <div>Evaluation: 50% Public Benchmark / 50% Private Ground Truth</div>
                     </div>
 
@@ -512,6 +512,14 @@
 
                         <!-- Submission Alert Banner -->
                         <div id="box-submit-alert" class="hidden"></div>
+
+                        <!-- Team Authentication Guidance Note -->
+                        <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs font-sans flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
+                            <div>
+                                <strong>Registered Team Authentication:</strong> Submissions are validated against official NIT Jamshedpur registered teams. Enter the exact <strong>Team Name</strong>, <strong>Leader Email</strong>, and <strong>Leader Roll Number</strong> used during registration. Need to register your team or verify your roll number? Contact ACC coordinators at <code class="text-blue-200">acc@nitjsr.ac.in</code>.
+                            </div>
+                        </div>
 
                         <!-- Ingestion Form -->
                         <form id="form-submission" onsubmit="handleFormSubmission(event)" class="space-y-4">
@@ -1015,6 +1023,9 @@
                 } else if (currentSortColumn === 'submissions') {
                     vA = Number(a.total_submissions || a.submissions_count || 0);
                     vB = Number(b.total_submissions || b.submissions_count || 0);
+                } else if (currentSortColumn === 'last_active') {
+                    vA = a.last_active || a.timestamp || '';
+                    vB = b.last_active || b.timestamp || '';
                 }
 
                 if (vA < vB) return sortDirection === 'asc' ? -1 : 1;
@@ -1250,8 +1261,21 @@
         }
 
         function escapeStr(s) {
-            return (s || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return (s || '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
         }
+
+        // Close open modals on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAdminModal();
+                closeReceiptModal();
+            }
+        });
 
         // Initialize leaderboard on DOM load
         fetchLeaderboardData();
