@@ -103,10 +103,10 @@ def init_db():
             now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
             date_today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             seed_teams = [
-                ("NeuralCommanders", "neural.nitj@nitjsr.ac.in", 0.8142, 1.3821, 0.9820, 0.7984, 1.4520, 1.0120),
-                ("ByteGrads_NITJ", "bytegrads@nitjsr.ac.in", 0.7850, 1.5020, 1.0910, 0.8012, 1.4320, 0.9980),
-                ("GradientPioneers", "pioneers@nitjsr.ac.in", 0.7610, 1.6210, 1.1520, 0.7420, 1.7010, 1.2150),
-                ("Baseline Benchmark", "acc.benchmark@nitjsr.ac.in", -0.0864, 9.6455, 6.7385, -0.0811, 9.7248, 6.7412)
+                ("NeuralCommanders", "neural.nitj@nitjsr.ac.in", 0.7240, 980.15, 412.30, 0.7185, 995.20, 420.10),
+                ("ByteGrads_NITJ", "bytegrads@nitjsr.ac.in", 0.6912, 1035.40, 445.60, 0.6890, 1042.80, 450.25),
+                ("GradientPioneers", "pioneers@nitjsr.ac.in", 0.6450, 1110.25, 482.10, 0.6510, 1102.60, 478.40),
+                ("Baseline Benchmark (Category-Median)", "acc.benchmark@nitjsr.ac.in", 0.4510, 1392.15, 624.51, 0.4400, 1413.68, 632.20)
             ]
             for t_name, t_email, pub_r2, pub_rmse, pub_mae, priv_r2, priv_rmse, priv_mae in seed_teams:
                 conn.execute("""
@@ -129,26 +129,30 @@ init_db()
 # Load Secret Ground Truth securely into memory once on start
 GROUND_TRUTH_FILE = os.path.join(BACKEND_DIR, "server_ground_truth.csv")
 if not os.path.exists(GROUND_TRUTH_FILE):
-    print(f"⚠️ Auto-generating 100k truth labels for cloud runtime at {GROUND_TRUTH_FILE}...")
+    print(f"⚠️ Auto-generating 200k truth labels for cloud runtime at {GROUND_TRUTH_FILE}...")
     os.makedirs(os.path.dirname(GROUND_TRUTH_FILE), exist_ok=True)
     np.random.seed(42)
-    n = 100000
-    candidate_ids = [f"NITJ_CC_{200000 + i}" for i in range(1, n + 1)]
-    base = np.random.normal(12.5, 3.2, n)
-    packages = np.clip(np.round(base, 2), 2.5, 65.0)
-    usage = np.array(["Public"] * 50000 + ["Private"] * 50000)
+    n = 200000
+    prod_ids = [2000000 + i for i in range(1, n + 1)]
+    lengths = np.clip(np.round(np.random.normal(750.0, 350.0, n), 2), 10.0, 10000.0)
+    usage = np.array(["Public"] * 100000 + ["Private"] * 100000)
     np.random.seed(1337)
     np.random.shuffle(usage)
-    df_gen = pd.DataFrame({"candidate_id": candidate_ids, "target_offered_ctc": packages, "Usage": usage})
+    df_gen = pd.DataFrame({"PRODUCT_ID": prod_ids, "PRODUCT_LENGTH": lengths, "Usage": usage})
     df_gen.to_csv(GROUND_TRUTH_FILE, index=False)
     print("✓ Created cloud runtime ground truth.")
 
 print(f"🔒 [Security Engine] Loading Secret Ground Truth from: {GROUND_TRUTH_FILE}")
 gt_df = pd.read_csv(GROUND_TRUTH_FILE)
-gt_df['candidate_id'] = gt_df['candidate_id'].astype(str).str.strip()
-gt_dict = dict(zip(gt_df['candidate_id'], gt_df['target_offered_ctc']))
-usage_dict = dict(zip(gt_df['candidate_id'], gt_df['Usage']))
-expected_ids = set(gt_df['candidate_id'])
+
+# Support both PRODUCT_ID / candidate_id schemas seamlessly
+id_col = 'PRODUCT_ID' if 'PRODUCT_ID' in gt_df.columns else 'candidate_id'
+target_col = 'PRODUCT_LENGTH' if 'PRODUCT_LENGTH' in gt_df.columns else 'target_offered_ctc'
+
+gt_df[id_col] = gt_df[id_col].astype(str).str.strip()
+gt_dict = dict(zip(gt_df[id_col], gt_df[target_col]))
+usage_dict = dict(zip(gt_df[id_col], gt_df['Usage']))
+expected_ids = set(gt_df[id_col])
 
 # Pre-partition ground truth arrays for sub-10ms scoring
 public_ids = [cid for cid, u in usage_dict.items() if u == 'Public']
@@ -156,7 +160,7 @@ private_ids = [cid for cid, u in usage_dict.items() if u == 'Private']
 y_true_public = np.array([gt_dict[cid] for cid in public_ids], dtype=np.float64)
 y_true_private = np.array([gt_dict[cid] for cid in private_ids], dtype=np.float64)
 
-print(f"✓ [Security Engine] Vault initialized with {len(gt_df)} secret records (50k Public / 50k Private).")
+print(f"✓ [Security Engine] Vault initialized with {len(gt_df)} secret records (100k Public / 100k Private).")
 
 # Ensure participant starter datasets exist
 os.makedirs(PARTICIPANT_DIR, exist_ok=True)
@@ -207,7 +211,8 @@ def download_file(filename):
         "train.csv": "train.csv",
         "test.csv": "test.csv",
         "sample_submission.csv": "sample_submission.csv",
-        "baseline_model.py": "baseline_model.py"
+        "baseline_model.py": "baseline_model.py",
+        "catalog_intelligence_2026_pack.zip": "catalog_intelligence_2026_pack.zip"
     }
     
     if filename not in ALLOWED_DOWNLOADS:
@@ -281,35 +286,41 @@ def submit_predictions():
     try:
         user_df = pd.read_csv(sub_path)
         
-        # Verify schema
-        required_cols = {'candidate_id', 'target_offered_ctc'}
-        if not required_cols.issubset(set(user_df.columns)):
+        # Verify schema: support both PRODUCT_ID / PRODUCT_LENGTH and legacy candidate_id / target_offered_ctc
+        user_cols = set(user_df.columns)
+        if {'PRODUCT_ID', 'PRODUCT_LENGTH'}.issubset(user_cols):
+            sub_id_col = 'PRODUCT_ID'
+            sub_target_col = 'PRODUCT_LENGTH'
+        elif {'candidate_id', 'target_offered_ctc'}.issubset(user_cols):
+            sub_id_col = 'candidate_id'
+            sub_target_col = 'target_offered_ctc'
+        else:
             os.remove(sub_path)
             return jsonify({
                 "success": False,
-                "error": "CSV header rejected. Must contain exact columns: candidate_id, target_offered_ctc"
+                "error": "CSV header rejected. Must contain exact columns: PRODUCT_ID, PRODUCT_LENGTH (or candidate_id, target_offered_ctc)"
             }), 400
 
-        user_df['candidate_id'] = user_df['candidate_id'].astype(str).str.strip()
-        user_df['target_offered_ctc'] = pd.to_numeric(user_df['target_offered_ctc'], errors='coerce')
+        user_df[sub_id_col] = user_df[sub_id_col].astype(str).str.strip()
+        user_df[sub_target_col] = pd.to_numeric(user_df[sub_target_col], errors='coerce')
 
-        if user_df['target_offered_ctc'].isnull().any():
+        if user_df[sub_target_col].isnull().any():
             os.remove(sub_path)
             return jsonify({
                 "success": False, 
-                "error": "NaN, null, or non-numeric values detected in predicted compensation column."
+                "error": "NaN, null, or non-numeric values detected in predicted target column."
             }), 400
 
-        user_ids = set(user_df['candidate_id'])
+        user_ids = set(user_df[sub_id_col])
         if len(user_ids) != len(expected_ids) or user_ids != expected_ids:
             os.remove(sub_path)
             return jsonify({
                 "success": False,
-                "error": f"Row count / ID mismatch. Expected exactly {len(expected_ids)} valid candidate IDs."
+                "error": f"Row count / ID mismatch. Expected exactly {len(expected_ids)} valid IDs."
             }), 400
 
         # High-performance O(N) evaluation using dictionary lookup
-        user_map = dict(zip(user_df['candidate_id'], user_df['target_offered_ctc']))
+        user_map = dict(zip(user_df[sub_id_col], user_df[sub_target_col]))
         y_pred_public = np.array([user_map[cid] for cid in public_ids], dtype=np.float64)
         y_pred_private = np.array([user_map[cid] for cid in private_ids], dtype=np.float64)
 

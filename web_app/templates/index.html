@@ -327,8 +327,8 @@
                         <!-- Clean, Modern Editorial Typography Headline -->
                         <div class="space-y-1 select-none max-w-2xl py-1">
                             <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white uppercase font-sans leading-[1.05]">
-                                PREDICT CAMPUS<br>
-                                <span class="bg-gradient-to-r from-white via-slate-100 to-[#ff6600] bg-clip-text text-transparent">PLACEMENTS</span>
+                                CATALOG<br>
+                                <span class="bg-gradient-to-r from-white via-slate-100 to-[#ff6600] bg-clip-text text-transparent">INTELLIGENCE</span>
                             </h1>
                         </div>
 
@@ -339,7 +339,7 @@
 
                         <!-- Easy-to-understand Human Description -->
                         <p class="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed font-normal">
-                            Can your machine learning model predict the job packages offered to NIT Jamshedpur graduates? Train on 100,000 real student profiles across 7 engineering branches, climb the leaderboard, and qualify for the final presentation round.
+                            Can your machine learning model forecast standardized physical product dimensions from unstructured e-commerce catalog metadata? Train on 400,000 real global retail merchant listings, predict length specifications for 200,000 test products, and qualify for the Stage 2 executive consulting round.
                         </p>
 
                         <!-- Action Buttons -->
@@ -368,22 +368,22 @@
                                     <img src="/static/img/mars_orb.png" alt="Mars Planetary Globe" class="w-40 h-40 object-contain mars-orb-float relative z-10 drop-shadow-[0_0_35px_rgba(255,102,0,0.5)]">
                                 </div>
                                 <span class="text-[11px] font-mono tracking-wider text-[#ff6600] uppercase mt-3">BENCHMARK OVERVIEW</span>
-                                <h3 class="font-bold text-base text-white mt-0.5">CAMPUS SALARY DATASET</h3>
+                                <h3 class="font-bold text-base text-white mt-0.5">GLOBAL CATALOG DATASET</h3>
                             </div>
 
                             <!-- 4 Clear Metrics -->
                             <div class="grid grid-cols-2 gap-2.5 font-mono text-xs pt-3 border-t border-white/10">
                                 <div class="p-3 rounded-xl bg-white/5 border border-white/5">
                                     <div class="text-[10px] text-slate-400">TRAINING DATA</div>
-                                    <div class="text-white font-bold text-sm mt-0.5">100,000</div>
+                                    <div class="text-white font-bold text-sm mt-0.5">400,000</div>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/5 border border-white/5">
                                     <div class="text-[10px] text-slate-400">TEST DATA</div>
-                                    <div class="text-white font-bold text-sm mt-0.5">100,000</div>
+                                    <div class="text-white font-bold text-sm mt-0.5">200,000</div>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/5 border border-white/5">
-                                    <div class="text-[10px] text-slate-400">BEST SCORE</div>
-                                    <div id="telemetry-lead-r2" class="text-[#ff6600] font-bold text-sm mt-0.5">0.8142</div>
+                                    <div class="text-[10px] text-slate-400">BENCHMARK R²</div>
+                                    <div id="telemetry-lead-r2" class="text-[#ff6600] font-bold text-sm mt-0.5">0.7240</div>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white/5 border border-white/5">
                                     <div class="text-[10px] text-slate-400">TEAMS JOINED</div>
@@ -418,10 +418,10 @@
                                 </div>
                                 <span id="badge-benchmark-type" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    PUBLIC BENCHMARK (50,000 ROWS)
+                                    PUBLIC BENCHMARK (100,000 ROWS)
                                 </span>
                             </div>
-                            <p class="text-xs text-slate-400 font-sans">Teams are ranked by prediction accuracy (R² Score). Closer to 1.0 is better.</p>
+                            <p class="text-xs text-slate-400 font-sans">Teams are ranked by predictive dimension accuracy (R² Score). Closer to 1.0 is better.</p>
                         </div>
                         
                         <div class="flex items-center gap-3">
@@ -440,7 +440,7 @@
                     <div id="banner-organizer-mode" class="hidden mt-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 items-center justify-between text-xs text-amber-300 font-sans shadow-[0_0_20px_rgba(245,158,11,0.15)]">
                         <div class="flex items-center gap-2.5">
                             <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
-                            <span><strong>ORGANIZER AUDIT ACTIVE:</strong> Confidential <span class="font-mono text-amber-200 underline font-bold">PRIVATE R²</span> column unlocked. Visible <strong>ONLY</strong> in this session. Public participants see strictly the 50k public benchmark.</span>
+                            <span><strong>ORGANIZER AUDIT ACTIVE:</strong> Confidential <span class="font-mono text-amber-200 underline font-bold">PRIVATE R²</span> column unlocked. Visible <strong>ONLY</strong> in this session. Public participants see strictly the 100k public benchmark.</span>
                         </div>
                         <button onclick="logoutAdmin()" class="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg text-xs font-mono font-bold text-amber-200 transition flex items-center gap-1.5 whitespace-nowrap">
                             <i class="fa-solid fa-lock text-[10px]"></i> Lock Private View
@@ -540,12 +540,12 @@
 
                             <!-- CSV Drag & Drop Zone -->
                             <div class="space-y-1.5">
-                                <label for="field-file-csv" class="block text-xs font-medium text-slate-300">PREDICTIONS CSV FILE (EXACTLY 100,000 ROWS) *</label>
+                                <label for="field-file-csv" class="block text-xs font-medium text-slate-300">PREDICTIONS CSV FILE (EXACTLY 200,000 ROWS) *</label>
                                 <div id="dropzone" class="border-2 border-dashed border-white/20 hover:border-[#ff6600]/60 rounded-2xl p-8 text-center cursor-pointer transition bg-black/40 hover:bg-[#ff6600]/5 group">
                                     <input type="file" id="field-file-csv" accept=".csv" required aria-label="Predictions CSV File" class="hidden" onchange="handleFileSelected(this)">
                                     <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 group-hover:text-[#ff6600] transition mb-3"></i>
                                     <div class="text-sm font-semibold text-white">Click or drag & drop your submission CSV here</div>
-                                    <div class="text-xs text-slate-400 font-mono mt-1">Required columns: <code class="text-slate-200">candidate_id,target_offered_ctc</code></div>
+                                    <div class="text-xs text-slate-400 font-mono mt-1">Required columns: <code class="text-slate-200">PRODUCT_ID,PRODUCT_LENGTH</code></div>
                                     <div id="label-filename" class="mt-3 inline-flex items-center gap-2 text-xs font-mono text-[#ff6600] bg-[#ff6600]/15 px-3 py-1 rounded-full border border-[#ff6600]/30 hidden"></div>
                                 </div>
                             </div>
@@ -587,14 +587,14 @@
                                     <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                                         <i class="fa-solid fa-table"></i>
                                     </div>
-                                    <span class="text-[10px] font-mono text-slate-400">TRAINING DATA</span>
+                                    <span class="text-[10px] font-mono text-slate-400">TRAINING DATA (400,000 ROWS)</span>
                                 </div>
                                 <div>
                                     <div class="text-sm font-bold text-white font-mono">train.csv</div>
-                                    <div class="text-xs text-slate-400 mt-1">100,000 student records with known salaries to train your model.</div>
+                                    <div class="text-xs text-slate-400 mt-1">400,000 product records with verified dimensions (PRODUCT_LENGTH) to train your model.</div>
                                 </div>
                                 <a href="/download/train.csv" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 rounded-xl text-xs font-medium text-slate-200 hover:text-emerald-300 transition">
-                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD TRAIN DATA</span>
+                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD TRAIN DATA (388 MB)</span>
                                 </a>
                             </div>
 
@@ -604,14 +604,14 @@
                                     <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
                                         <i class="fa-solid fa-flask"></i>
                                     </div>
-                                    <span class="text-[10px] font-mono text-slate-400">TEST DATA</span>
+                                    <span class="text-[10px] font-mono text-slate-400">TEST DATA (200,000 ROWS)</span>
                                 </div>
                                 <div>
                                     <div class="text-sm font-bold text-white font-mono">test.csv</div>
-                                    <div class="text-xs text-slate-400 mt-1">100,000 students without salaries. Predict these to score!</div>
+                                    <div class="text-xs text-slate-400 mt-1">200,000 products without dimension labels. Predict length to rank on leaderboard!</div>
                                 </div>
                                 <a href="/download/test.csv" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/40 rounded-xl text-xs font-medium text-slate-200 hover:text-cyan-300 transition">
-                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD TEST DATA</span>
+                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD TEST DATA (191 MB)</span>
                                 </a>
                             </div>
 
@@ -621,31 +621,31 @@
                                     <div class="w-10 h-10 rounded-xl bg-[#ff6600]/15 border border-[#ff6600]/30 flex items-center justify-center text-[#ff6600]">
                                         <i class="fa-solid fa-file-csv"></i>
                                     </div>
-                                    <span class="text-[10px] font-mono text-slate-400">SAMPLE FORMAT</span>
+                                    <span class="text-[10px] font-mono text-slate-400">SAMPLE FORMAT (200,000 ROWS)</span>
                                 </div>
                                 <div>
                                     <div class="text-sm font-bold text-white font-mono">sample_submission.csv</div>
-                                    <div class="text-xs text-slate-400 mt-1">Example format showing exact columns: candidate_id, target_offered_ctc.</div>
+                                    <div class="text-xs text-slate-400 mt-1">Template showing exact columns: PRODUCT_ID, PRODUCT_LENGTH.</div>
                                 </div>
                                 <a href="/download/sample_submission.csv" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-[#ff6600]/20 border border-white/10 hover:border-[#ff6600]/40 rounded-xl text-xs font-medium text-slate-200 hover:text-[#ff6600] transition">
-                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD FORMAT</span>
+                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD TEMPLATE (2.8 MB)</span>
                                 </a>
                             </div>
 
-                            <!-- baseline_model.py -->
+                            <!-- catalog_intelligence_2026_pack.zip -->
                             <div class="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/40 space-y-3 transition">
                                 <div class="flex items-center justify-between">
                                     <div class="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                                        <i class="fa-brands fa-python"></i>
+                                        <i class="fa-solid fa-file-zipper"></i>
                                     </div>
-                                    <span class="text-[10px] font-mono text-slate-400">STARTER CODE</span>
+                                    <span class="text-[10px] font-mono text-slate-400">ALL-IN-ONE BUNDLE</span>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-bold text-white font-mono">baseline_model.py</div>
-                                    <div class="text-xs text-slate-400 mt-1">A ready-to-run Python script using LightGBM to get started fast.</div>
+                                    <div class="text-sm font-bold text-white font-mono">catalog_intelligence_2026_pack.zip</div>
+                                    <div class="text-xs text-slate-400 mt-1">Complete zip archive with train.csv, test.csv, and sample_submission.csv.</div>
                                 </div>
-                                <a href="/download/baseline_model.py" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 rounded-xl text-xs font-medium text-slate-200 hover:text-purple-300 transition">
-                                    <i class="fa-solid fa-code"></i> <span>DOWNLOAD STARTER SCRIPT</span>
+                                <a href="/download/catalog_intelligence_2026_pack.zip" class="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 rounded-xl text-xs font-medium text-slate-200 hover:text-purple-300 transition">
+                                    <i class="fa-solid fa-download"></i> <span>DOWNLOAD FULL ZIP (232 MB)</span>
                                 </a>
                             </div>
                         </div>
@@ -677,7 +677,7 @@
                                     <span>HOW SCORING WORKS</span>
                                 </div>
                                 <p class="text-slate-400 leading-normal pl-9">
-                                    Submissions are ranked primarily by <strong class="text-white font-semibold">R² Score</strong> (how closely your predicted salaries track actual salaries). Closer to 1.0 is better! If two teams have the same R², the team with lower <strong class="text-white font-semibold">RMSE</strong> (average salary error in ₹ Lakhs) wins the tiebreaker.
+                                    Submissions are ranked primarily by <strong class="text-white font-semibold">R² Score (Coefficient of Determination)</strong> measuring how closely your predicted product dimensions match ground truth lengths. Closer to 1.0 is better! If two teams have the same R², the team with lower <strong class="text-white font-semibold">RMSE</strong> (error in millimeters) wins the tiebreaker.
                                 </p>
                             </div>
 
@@ -689,7 +689,7 @@
                                     <span>PUBLIC VS PRIVATE LEADERBOARD</span>
                                 </div>
                                 <p class="text-slate-400 leading-normal pl-9">
-                                    The 100,000 test students are split 50/50. During the competition, your score on the live leaderboard is calculated on the <strong class="text-white font-semibold">50,000 Public rows</strong>. At the end of the competition, final winners are evaluated on the remaining <strong class="text-white font-semibold">50,000 Private rows</strong> so nobody can cheat or overfit.
+                                    The 200,000 test products are split 50/50. During the competition, your score on the live leaderboard is calculated on the <strong class="text-white font-semibold">100,000 Public rows</strong>. At the end of the competition, final podium winners are verified on the remaining <strong class="text-white font-semibold">100,000 Private rows</strong> to prevent overfitting or manual probing.
                                 </p>
                             </div>
 
@@ -701,7 +701,7 @@
                                     <span>DAILY SUBMISSION LIMIT</span>
                                 </div>
                                 <p class="text-slate-400 leading-normal pl-9">
-                                    Each team gets <strong class="text-white font-semibold">5 submissions every 24 hours</strong>. Your highest score is automatically saved, so you can keep trying and improving without losing your rank!
+                                    Each team gets <strong class="text-white font-semibold">5 evaluated submissions every 24 hours</strong>. Your highest score is automatically saved, allowing continuous iteration and model optimization!
                                 </p>
                             </div>
                         </div>

@@ -21,13 +21,12 @@ def client():
 # =========================================================================
 
 def test_p0_csv_headers_in_html():
-    """Verify that index.html specifies candidate_id,target_offered_ctc and has no trace of ID,Placed_CTC_LPA."""
+    """Verify that index.html specifies PRODUCT_ID,PRODUCT_LENGTH and has no trace of old legacy headers."""
     html_path = os.path.join(BASE_DIR, "web_app", "templates", "index.html")
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
 
-    assert "candidate_id,target_offered_ctc" in html
-    assert "candidate_id, target_offered_ctc" in html
+    assert "PRODUCT_ID,PRODUCT_LENGTH" in html
     assert "ID,Placed_CTC_LPA" not in html
     assert "ID, Placed_CTC_LPA" not in html
 
