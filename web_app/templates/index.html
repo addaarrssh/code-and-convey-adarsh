@@ -1004,14 +1004,14 @@
                     vA = (a.team_name || '').toLowerCase();
                     vB = (b.team_name || '').toLowerCase();
                 } else if (currentSortColumn === 'r2' || currentSortColumn === 'public_r2') {
-                    vA = a.best_public_r2 ?? a.public_r2 ?? -999;
-                    vB = b.best_public_r2 ?? b.public_r2 ?? -999;
+                    vA = a.best_public_r2 ?? a.public_r2 ?? -Infinity;
+                    vB = b.best_public_r2 ?? b.public_r2 ?? -Infinity;
                 } else if (currentSortColumn === 'private_r2') {
-                    vA = a.best_private_r2 ?? a.private_r2 ?? -999;
-                    vB = b.best_private_r2 ?? b.private_r2 ?? -999;
+                    vA = a.best_private_r2 ?? a.private_r2 ?? -Infinity;
+                    vB = b.best_private_r2 ?? b.private_r2 ?? -Infinity;
                 } else if (currentSortColumn === 'rmse') {
-                    vA = a.best_public_rmse ?? a.public_rmse ?? 9999;
-                    vB = b.best_public_rmse ?? b.public_rmse ?? 9999;
+                    vA = a.best_public_rmse ?? a.public_rmse ?? Infinity;
+                    vB = b.best_public_rmse ?? b.public_rmse ?? Infinity;
                 } else if (currentSortColumn === 'submissions') {
                     vA = Number(a.total_submissions || a.submissions_count || 0);
                     vB = Number(b.total_submissions || b.submissions_count || 0);

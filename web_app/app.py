@@ -9,7 +9,7 @@ import zipfile
 import sqlite3
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 
@@ -100,8 +100,8 @@ def init_db():
         # Auto-seed reference teams if submissions table is empty
         cur.execute("SELECT COUNT(*) FROM submissions")
         if cur.fetchone()[0] == 0:
-            now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-            date_today = datetime.utcnow().strftime("%Y-%m-%d")
+            now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+            date_today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             seed_teams = [
                 ("NeuralCommanders", "neural.nitj@nitjsr.ac.in", 0.8142, 1.3821, 0.9820, 0.7984, 1.4520, 1.0120),
                 ("ByteGrads_NITJ", "bytegrads@nitjsr.ac.in", 0.7850, 1.5020, 1.0910, 0.8012, 1.4320, 0.9980),
@@ -232,7 +232,7 @@ def submit_predictions():
         cur = conn.cursor()
         cur.execute(
             """
-            SELECT id, is_active 
+            SELECT id, team_name, leader_email, is_active 
             FROM registered_teams 
             WHERE LOWER(TRIM(team_name)) = ? 
               AND LOWER(TRIM(leader_email)) = ? 
@@ -248,6 +248,9 @@ def submit_predictions():
             "error": "Verification failed: Team Name, Leader Email, or Leader Roll Number does not match registered records."
         }), 401
 
+    canonical_team_name = reg_team["team_name"]
+    canonical_leader_email = reg_team["leader_email"]
+
     if "submission_file" not in request.files:
         return jsonify({"success": False, "error": "No submission CSV payload detected."}), 400
         
@@ -255,13 +258,13 @@ def submit_predictions():
     if not file.filename.lower().endswith(".csv"):
         return jsonify({"success": False, "error": "Payload format rejected. Expected .csv file."}), 400
 
-    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute(
             "SELECT COUNT(*) FROM submissions WHERE LOWER(team_name) = ? AND date_str = ?", 
-            (team_name.lower(), today_str)
+            (canonical_team_name.lower(), today_str)
         )
         today_count = cur.fetchone()[0]
 
@@ -271,8 +274,8 @@ def submit_predictions():
             "error": "Anti-probing rate limit reached (Maximum 5 evaluated attempts per 24 hours)."
         }), 429
 
-    timestamp_str = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    safe_team = "".join(c for c in team_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
+    timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    safe_team = "".join(c for c in canonical_team_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
     sub_filename = f"{safe_team}_{timestamp_str}.csv"
     sub_path = os.path.join(UPLOADS_DIR, sub_filename)
     file.save(sub_path)
@@ -329,7 +332,7 @@ def submit_predictions():
         priv_mae = float(mean_absolute_error(y_true_private, y_pred_private))
         priv_r2 = float(r2_score(y_true_private, y_pred_private))
 
-        now_formatted = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        now_formatted = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
         # Save to SQLite
         with get_db() as conn:
@@ -341,7 +344,7 @@ def submit_predictions():
                     timestamp, date_str
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                team_name, team_email, sub_filename, nb_filename,
+                canonical_team_name, canonical_leader_email, sub_filename, nb_filename,
                 pub_r2, pub_rmse, pub_mae,
                 priv_r2, priv_rmse, priv_mae,
                 now_formatted, today_str
@@ -351,7 +354,7 @@ def submit_predictions():
         # Notice: Only public metrics are returned to the client!
         return jsonify({
             "success": True,
-            "team_name": team_name,
+            "team_name": canonical_team_name,
             "public_r2": round(pub_r2, 4),
             "public_rmse": round(pub_rmse, 4),
             "public_mae": round(pub_mae, 4),
@@ -382,11 +385,11 @@ def get_leaderboard():
         cur.execute(f"""
             WITH team_stats AS (
                 SELECT 
-                    team_name,
+                    LOWER(team_name) as lower_name,
                     COUNT(*) as total_submissions,
                     MAX(timestamp) as last_active
                 FROM submissions
-                GROUP BY team_name
+                GROUP BY LOWER(team_name)
             ),
             ranked_subs AS (
                 SELECT 
@@ -400,7 +403,7 @@ def get_leaderboard():
                     private_mae,
                     timestamp,
                     ROW_NUMBER() OVER (
-                        PARTITION BY team_name 
+                        PARTITION BY LOWER(team_name) 
                         ORDER BY {order_by}
                     ) as rn
                 FROM submissions
@@ -417,7 +420,7 @@ def get_leaderboard():
                 s.total_submissions,
                 s.last_active
             FROM ranked_subs r
-            JOIN team_stats s ON r.team_name = s.team_name
+            JOIN team_stats s ON LOWER(r.team_name) = s.lower_name
             WHERE r.rn = 1
         """)
         rows = cur.fetchall()
@@ -450,13 +453,13 @@ def get_leaderboard():
 
     if show_private:
         leaderboard.sort(key=lambda x: (
-            x["best_private_r2"] if x["best_private_r2"] is not None else -999,
-            -(x["best_private_rmse"] if x["best_private_rmse"] is not None else 999)
+            x["best_private_r2"] if x["best_private_r2"] is not None else float("-inf"),
+            -(x["best_private_rmse"] if x["best_private_rmse"] is not None else float("inf"))
         ), reverse=True)
     else:
         leaderboard.sort(key=lambda x: (
-            x["best_public_r2"] if x["best_public_r2"] is not None else -999,
-            -(x["best_public_rmse"] if x["best_public_rmse"] is not None else 999)
+            x["best_public_r2"] if x["best_public_r2"] is not None else float("-inf"),
+            -(x["best_public_rmse"] if x["best_public_rmse"] is not None else float("inf"))
         ), reverse=True)
 
     for i, row in enumerate(leaderboard):
@@ -524,13 +527,43 @@ def export_archive():
             zipf.writestr("audit_master_submissions.csv", csv_str)
 
     memory_file.seek(0)
-    now_stamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    now_stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     return send_file(
         memory_file,
         mimetype="application/zip",
         as_attachment=True,
         download_name=f"Code_and_Convey_Master_Archive_{now_stamp}.zip"
     )
+
+@app.route("/api/admin/register-team", methods=["POST"])
+def admin_register_team():
+    data = request.get_json(silent=True) or {}
+    pin = data.get("pin", "").strip() or request.headers.get("X-Admin-PIN", "").strip()
+    if pin != ADMIN_PIN:
+        return jsonify({"success": False, "error": "Security clearance denied: Invalid Admin PIN."}), 403
+
+    team_name = data.get("team_name", "").strip()
+    leader_name = data.get("leader_name", "").strip() or team_name
+    leader_email = data.get("leader_email", "").strip()
+    leader_roll_no = data.get("leader_roll_no", "").strip()
+    is_active = int(data.get("is_active", 1))
+
+    if not team_name or not leader_email or not leader_roll_no:
+        return jsonify({"success": False, "error": "team_name, leader_email, and leader_roll_no are required."}), 400
+
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO registered_teams (team_name, leader_name, leader_email, leader_roll_no, is_active)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(team_name) DO UPDATE SET
+                leader_name = excluded.leader_name,
+                leader_email = excluded.leader_email,
+                leader_roll_no = excluded.leader_roll_no,
+                is_active = excluded.is_active
+        """, (team_name, leader_name, leader_email, leader_roll_no, is_active))
+        conn.commit()
+
+    return jsonify({"success": True, "message": f"Team '{team_name}' registered successfully."})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

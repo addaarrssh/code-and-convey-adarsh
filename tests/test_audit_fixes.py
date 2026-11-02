@@ -250,6 +250,10 @@ def test_end_to_end_valid_submission_flow(client):
     team_email = "pioneers@nitjsr.ac.in"
     leader_roll = "2024ugpi059"
 
+    with get_db() as conn:
+        conn.execute("DELETE FROM submissions WHERE LOWER(team_name) = LOWER(?)", (team_name,))
+        conn.commit()
+
     with open(sample_sub_path, "rb") as f:
         file_bytes = f.read()
 
@@ -277,4 +281,172 @@ def test_end_to_end_valid_submission_flow(client):
     assert pioneers_entry is not None
     assert pioneers_entry["best_public_r2"] == result["public_r2"]
     assert pioneers_entry["best_public_rmse"] == result["public_rmse"]
+
+
+# =========================================================================
+# 7. ADVANCED AUDIT: CANONICAL NORMALIZATION & ADMIN TEAM REGISTRATION
+# =========================================================================
+
+def test_canonical_team_name_and_casing_deduplication(client):
+    """
+    Verify that submissions with varied casing:
+    1. Are mapped to canonical team_name from registered_teams.
+    2. Are grouped into a single team row on the leaderboard rather than duplicate rows.
+    """
+    test_team = "CaseTestTeam"
+    with get_db() as conn:
+        conn.execute("DELETE FROM submissions WHERE LOWER(team_name) = LOWER(?)", (test_team,))
+        conn.execute("DELETE FROM registered_teams WHERE LOWER(team_name) = LOWER(?)", (test_team,))
+        conn.execute("""
+            INSERT INTO registered_teams (team_name, leader_name, leader_email, leader_roll_no, is_active)
+            VALUES (?, ?, ?, ?, 1)
+        """, (test_team, "Case Leader", "case@nitjsr.ac.in", "2024ugcs888"))
+        # Insert two submissions directly with different casing and valid private metrics
+        conn.execute("""
+            INSERT INTO submissions (
+                team_name, team_email, submission_filename,
+                public_r2, public_rmse, public_mae,
+                private_r2, private_rmse, private_mae,
+                timestamp, date_str
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (test_team.upper(), "case@nitjsr.ac.in", "s1.csv", 0.60, 2.0, 1.5, 0.55, 2.2, 1.7, "2026-11-01 10:00:00 UTC", "2026-11-01"))
+        conn.execute("""
+            INSERT INTO submissions (
+                team_name, team_email, submission_filename,
+                public_r2, public_rmse, public_mae,
+                private_r2, private_rmse, private_mae,
+                timestamp, date_str
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (test_team.lower(), "case@nitjsr.ac.in", "s2.csv", 0.88, 1.1, 0.8, 0.85, 1.2, 0.9, "2026-11-01 11:00:00 UTC", "2026-11-01"))
+        conn.commit()
+
+    resp = client.get("/api/leaderboard")
+    assert resp.status_code == 200
+    lb = resp.get_json()["leaderboard"]
+    matching_entries = [item for item in lb if item["team_name"].lower() == test_team.lower()]
+    # Must be unified into exactly ONE row
+    assert len(matching_entries) == 1, f"Expected 1 grouped entry, got {len(matching_entries)}"
+    assert matching_entries[0]["total_submissions"] == 2
+    assert matching_entries[0]["best_public_r2"] == 0.88
+
+    # Clean up
+    with get_db() as conn:
+        conn.execute("DELETE FROM submissions WHERE LOWER(team_name) = LOWER(?)", (test_team,))
+        conn.execute("DELETE FROM registered_teams WHERE LOWER(team_name) = LOWER(?)", (test_team,))
+        conn.commit()
+
+
+def test_extreme_negative_r2_sorting(client):
+    """Verify that models with extreme negative R2 (e.g. -1500) are ranked correctly below better models."""
+    team_a = "ExtremeModelTeamA"
+    team_b = "ExtremeModelTeamB"
+    with get_db() as conn:
+        conn.execute("DELETE FROM submissions WHERE team_name IN (?, ?)", (team_a, team_b))
+        conn.execute("""
+            INSERT INTO submissions (
+                team_name, team_email, submission_filename,
+                public_r2, public_rmse, public_mae,
+                private_r2, private_rmse, private_mae,
+                timestamp, date_str
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (team_a, "ea@nitjsr.ac.in", "ea.csv", -1500.0, 50.0, 35.0, -1500.0, 50.0, 35.0, "2026-11-01 10:00:00 UTC", "2026-11-01"))
+        conn.execute("""
+            INSERT INTO submissions (
+                team_name, team_email, submission_filename,
+                public_r2, public_rmse, public_mae,
+                private_r2, private_rmse, private_mae,
+                timestamp, date_str
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (team_b, "eb@nitjsr.ac.in", "eb.csv", -2.0, 10.0, 8.0, -2.0, 10.0, 8.0, "2026-11-01 10:00:00 UTC", "2026-11-01"))
+        conn.commit()
+
+    resp = client.get("/api/leaderboard")
+    assert resp.status_code == 200
+    lb = resp.get_json()["leaderboard"]
+    entry_a = next(item for item in lb if item["team_name"] == team_a)
+    entry_b = next(item for item in lb if item["team_name"] == team_b)
+
+    # Team B (R2 = -2.0) must rank HIGHER (lower rank number) than Team A (R2 = -1500.0)
+    assert entry_b["rank"] < entry_a["rank"]
+
+    # Clean up
+    with get_db() as conn:
+        conn.execute("DELETE FROM submissions WHERE team_name IN (?, ?)", (team_a, team_b))
+        conn.commit()
+
+
+def test_admin_register_team_api(client):
+    """Verify POST /api/admin/register-team security and functional registration."""
+    new_team = "AdminRegisteredSquad"
+    new_email = "squad@nitjsr.ac.in"
+    new_roll = "2024ugmm077"
+
+    # Wrong PIN
+    bad_resp = client.post("/api/admin/register-team", json={
+        "pin": "WRONGPIN",
+        "team_name": new_team,
+        "leader_email": new_email,
+        "leader_roll_no": new_roll
+    })
+    assert bad_resp.status_code == 403
+
+    # Valid PIN
+    good_resp = client.post("/api/admin/register-team", json={
+        "pin": "MANNU",
+        "team_name": new_team,
+        "leader_name": "Squad Leader",
+        "leader_email": new_email,
+        "leader_roll_no": new_roll
+    })
+    assert good_resp.status_code == 200
+    assert good_resp.get_json()["success"] is True
+
+    # Now verify that this newly registered team can authenticate on /api/submit
+    submit_check = client.post("/api/submit", data={
+        "team_name": new_team,
+        "team_email": new_email,
+        "leader_roll_no": new_roll
+    })
+    # Should authenticate and fail only at missing CSV (400), not auth rejection (401)
+    assert submit_check.status_code == 400
+    assert "No submission CSV payload detected" in submit_check.get_json()["error"]
+
+    # Clean up
+    with get_db() as conn:
+        conn.execute("DELETE FROM registered_teams WHERE team_name = ?", (new_team,))
+        conn.commit()
+
+
+def test_google_form_csv_import_script():
+    """Verify that import_teams_csv.py can parse a Google Form CSV export and register teams."""
+    import tempfile
+    import subprocess
+
+    csv_content = """Timestamp,Email Address,Team Name,Team Leader Name,Leader Roll Number
+2026/11/02 10:00:00 AM,scriptleader@nitjsr.ac.in,ScriptImportedTeam,Script Leader,2024ugce011
+"""
+    with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as f:
+        f.write(csv_content)
+        temp_csv = f.name
+
+    try:
+        script_path = os.path.join(BASE_DIR, "scripts", "import_teams_csv.py")
+        db_path = os.path.join(BASE_DIR, "web_app", "competition_vault.db")
+        result = subprocess.run([sys.executable, script_path, temp_csv, "--db", db_path], capture_output=True, text=True)
+        assert result.returncode == 0
+        assert "registered" in result.stdout
+
+        # Verify team is in database
+        with get_db() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT leader_roll_no FROM registered_teams WHERE team_name = 'ScriptImportedTeam'")
+            row = cur.fetchone()
+            assert row is not None
+            assert row["leader_roll_no"] == "2024ugce011"
+            conn.execute("DELETE FROM registered_teams WHERE team_name = 'ScriptImportedTeam'")
+            conn.commit()
+    finally:
+        if os.path.exists(temp_csv):
+            os.remove(temp_csv)
+
 

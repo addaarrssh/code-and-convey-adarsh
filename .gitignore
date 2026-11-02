@@ -20,4 +20,4 @@ participant_download/test.csv
 participant_download/train.csv
 /sample_submission.csv
 /server_ground_truth.csv
-
+results/
